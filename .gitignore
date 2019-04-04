@@ -4,3 +4,4 @@
 build
 externel/*
 !externel/externel.zip
+Models/*

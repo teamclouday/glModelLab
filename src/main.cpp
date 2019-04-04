@@ -6,6 +6,7 @@ SDL_GLContext glContext = NULL;
 ImGuiIO* io = nullptr;
 Renderer *myRenderer = nullptr;
 
+
 int main(int argc, char *argv[])
 {
     initAll();

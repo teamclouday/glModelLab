@@ -7,6 +7,12 @@ extern ImGuiIO* io;
 Renderer::Renderer(ImVec4 clear_color)
 {
     clearColor = clear_color;
+    this->myModel = new Model();
+}
+
+Renderer::~Renderer()
+{
+    delete myModel;
 }
 
 void Renderer::startFrame()
@@ -29,7 +35,16 @@ void Renderer::render()
 
 void Renderer::setUpImGui()
 {
-    ImGui::Begin("Hello, world!");
-    ImGui::ColorEdit3("Clear Color",  (float*)&clearColor);
+    ImGui::Begin("Colors");
+    ImGui::ColorEdit3("Background Color",  (float*)&clearColor);
+    ImGui::End();
+
+    ImGui::Begin("Models");
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model List (in Models folder)");
+    ImGui::BeginChild("Scrolling");
+    
+    this->myModel->displayCheckList();
+
+    ImGui::EndChild();
     ImGui::End();
 }
