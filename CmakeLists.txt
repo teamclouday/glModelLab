@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.12.0)
+project(ModelLoader VERSION 1.0.0 LANGUAGES CXX)
+SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -mconsole")
+
+add_compile_definitions(GLEW_STATIC)
+
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+SET(MY_SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+FILE(GLOB_RECURSE SRC_FILES "${MY_SRC_DIR}/*.cpp")
+
+
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/externel.zip)
+execute_process(
+    COMMAND git pull origin master
+)
+endif()
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/glew)
+execute_process (
+    COMMAND unzip ${CMAKE_SOURCE_DIR}/externel/externel.zip -d ${CMAKE_SOURCE_DIR}/externel
+)
+endif()
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/SDL2.dll)
+execute_process (
+    COMMAND cp ${CMAKE_SOURCE_DIR}/externel/SDL2/bin/SDL2.dll ${CMAKE_SOURCE_DIR}/SDL2.dll
+)
+endif()
+
+
+include_directories(
+    "${CMAKE_SOURCE_DIR}/include"
+    "${CMAKE_SOURCE_DIR}/externel/glew/include"
+    "${CMAKE_SOURCE_DIR}/externel/glm/include"
+    "${CMAKE_SOURCE_DIR}/externel/SDL2/include"
+)
+
+link_directories(
+    "${CMAKE_SOURCE_DIR}/externel/glew/lib"
+    "${CMAKE_SOURCE_DIR}/externel/SDL2/lib"
+)
+
+find_package(OpenGL REQUIRED)
+
+add_executable(mdlab ${SRC_FILES})
+
+target_link_libraries(mdlab
+    mingw32
+    SDL2main
+    SDL2
+    glew32s
+    ${OPENGL_LIBRARIES}
+)
