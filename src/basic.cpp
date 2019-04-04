@@ -4,6 +4,7 @@
 extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
 extern ImGuiIO* io;
+extern Renderer *myRenderer;
 
 void initAll(const std::string title, int width, int height)
 {
@@ -56,29 +57,14 @@ void initAll(const std::string title, int width, int height)
 
 void startLoop()
 {
-    ImVec4 clear_color = ImVec4(0.4f, 0.5f, 0.6f, 1.0f);
     bool quit = false;
     while(!quit)
     {
         quit = pollEvents();
 
-        // new frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame(myWindow);
-        ImGui::NewFrame();
-
-        ImGui::Begin("Hello, world!");
-        ImGui::ColorEdit3("Clear Color",  (float*)&clear_color);
-        ImGui::End();
-
-        // render
-        ImGui::Render();
-        SDL_GL_MakeCurrent(myWindow, glContext);
-        glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        SDL_GL_SwapWindow(myWindow);
+        myRenderer->startFrame();
+        myRenderer->setUpImGui();
+        myRenderer->render();
     }
 }
 
@@ -103,6 +89,8 @@ bool pollEvents()
 
 void destroyAll()
 {
+    delete myRenderer;
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
