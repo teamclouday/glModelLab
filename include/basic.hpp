@@ -1,3 +1,4 @@
+#pragma once
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
@@ -7,6 +8,8 @@
 #include <string>
 
 #include "myerr.hpp"
+#include "renderer.hpp"
+#include "model.hpp"
 
 #define WINDOW_TITLE "Lab"
 #define WINDOW_WIDTH  1366
