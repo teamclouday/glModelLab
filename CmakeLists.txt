@@ -8,6 +8,7 @@ add_compile_definitions(GLEW_STATIC)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 SET(MY_SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 FILE(GLOB_RECURSE SRC_FILES "${MY_SRC_DIR}/*.cpp")
+FILE(GLOB_RECURSE SRC_IMGUI "${CMAKE_SOURCE_DIR}/externel/imgui/src/*.cpp")
 
 
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/externel.zip)
@@ -32,6 +33,7 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/externel/glew/include"
     "${CMAKE_SOURCE_DIR}/externel/glm/include"
     "${CMAKE_SOURCE_DIR}/externel/SDL2/include"
+    "${CMAKE_SOURCE_DIR}/externel/imgui/include"
 )
 
 link_directories(
@@ -41,7 +43,7 @@ link_directories(
 
 find_package(OpenGL REQUIRED)
 
-add_executable(mdlab ${SRC_FILES})
+add_executable(mdlab ${SRC_FILES} ${SRC_IMGUI})
 
 target_link_libraries(mdlab
     mingw32
