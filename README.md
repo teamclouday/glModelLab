@@ -26,5 +26,5 @@ mingw32-make
 
 ------
 
-The libs in externel folder are all for 64-bit Windows systems  
+The libs in externel folder are all for **64-bit Windows** systems  
 The static lib for glew is self-compiled by myself, which will be system specific, and may cause errors
