@@ -7,8 +7,6 @@ add_compile_definitions(GLEW_STATIC)
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 SET(MY_SRC_DIR "${CMAKE_SOURCE_DIR}/src")
-FILE(GLOB_RECURSE SRC_FILES "${MY_SRC_DIR}/*.cpp")
-FILE(GLOB_RECURSE SRC_IMGUI "${CMAKE_SOURCE_DIR}/externel/imgui/src/*.cpp")
 
 
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/externel.zip)
@@ -27,6 +25,9 @@ execute_process (
 )
 endif()
 
+
+FILE(GLOB_RECURSE SRC_FILES "${MY_SRC_DIR}/*.cpp")
+FILE(GLOB_RECURSE SRC_IMGUI "${CMAKE_SOURCE_DIR}/externel/imgui/src/*.cpp")
 
 include_directories(
     "${CMAKE_SOURCE_DIR}/include"
