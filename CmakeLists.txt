@@ -35,11 +35,13 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/externel/glm/include"
     "${CMAKE_SOURCE_DIR}/externel/SDL2/include"
     "${CMAKE_SOURCE_DIR}/externel/imgui/include"
+    "${CMAKE_SOURCE_DIR}/externel/assimp/include"
 )
 
 link_directories(
     "${CMAKE_SOURCE_DIR}/externel/glew/lib"
     "${CMAKE_SOURCE_DIR}/externel/SDL2/lib"
+    "${CMAKE_SOURCE_DIR}/externel/assimp/lib"
 )
 
 find_package(OpenGL REQUIRED)
@@ -51,5 +53,6 @@ target_link_libraries(mdlab
     SDL2main
     SDL2
     glew32s
+    assimp
     ${OPENGL_LIBRARIES}
 )

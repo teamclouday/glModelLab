@@ -7,6 +7,10 @@
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
