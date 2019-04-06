@@ -24,6 +24,11 @@ execute_process (
     COMMAND cp ${CMAKE_SOURCE_DIR}/externel/SDL2/bin/SDL2.dll ${CMAKE_SOURCE_DIR}/SDL2.dll
 )
 endif()
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/libassimp.dll)
+execute_process (
+    COMMAND cp ${CMAKE_SOURCE_DIR}/externel/assimp/bin/libassimp.dll ${CMAKE_SOURCE_DIR}/libassimp.dll
+)
+endif()
 
 
 FILE(GLOB_RECURSE SRC_FILES "${MY_SRC_DIR}/*.cpp")
@@ -36,12 +41,14 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/externel/SDL2/include"
     "${CMAKE_SOURCE_DIR}/externel/imgui/include"
     "${CMAKE_SOURCE_DIR}/externel/assimp/include"
+    "${CMAKE_SOURCE_DIR}/externel/SOIL/include"
 )
 
 link_directories(
     "${CMAKE_SOURCE_DIR}/externel/glew/lib"
     "${CMAKE_SOURCE_DIR}/externel/SDL2/lib"
     "${CMAKE_SOURCE_DIR}/externel/assimp/lib"
+    "${CMAKE_SOURCE_DIR}/externel/SOIL/lib"
 )
 
 find_package(OpenGL REQUIRED)
@@ -54,5 +61,6 @@ target_link_libraries(mdlab
     SDL2
     glew32s
     assimp
+    SOIL
     ${OPENGL_LIBRARIES}
 )

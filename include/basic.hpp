@@ -18,6 +18,8 @@
 #include "myerr.hpp"
 #include "renderer.hpp"
 #include "model.hpp"
+#include "mesh.hpp"
+#include "shader.hpp"
 
 #define WINDOW_TITLE "Lab"
 #define WINDOW_WIDTH  1366

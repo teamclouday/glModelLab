@@ -7,7 +7,12 @@ extern ImGuiIO* io;
 Renderer::Renderer(ImVec4 clear_color)
 {
     clearColor = clear_color;
-    this->myModel = new Model();
+    this->myModel = nullptr;
+    this->modelIdx = 0;
+    this->shaderIdx = 0;
+
+    this->loadModelLists();
+    this->loadShaderLists();
 }
 
 Renderer::~Renderer()
@@ -40,11 +45,60 @@ void Renderer::setUpImGui()
     ImGui::End();
 
     ImGui::Begin("Models");
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model List (in Models folder)");
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Models List");
     ImGui::BeginChild("Scrolling");
     
-    this->myModel->displayCheckList();
+    if(this->model_list.size() <= 2)
+        ImGui::Text("No models found under Models folder!");
+    else
+    {
+        for(int i = 2; i < this->model_list.size(); i++)
+        {
+            ImGui::RadioButton(model_list[i].c_str(), &this->modelIdx, i);
+        }
+    }
 
     ImGui::EndChild();
     ImGui::End();
+
+    ImGui::Begin("Shaders");
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Shaders List");
+    ImGui::BeginChild("Scrolling");
+
+    if(this->shader_list.size() <= 2)
+        ImGui::Text("No shaders found under Shaders folder!");
+    else
+    {
+        for(int i = 2; i < this->shader_list.size(); i++)
+        {
+            ImGui::RadioButton(shader_list[i].c_str(), &this->shaderIdx, i);
+        }
+    }
+
+    ImGui::EndChild();
+    ImGui::End();
+}
+
+void Renderer::loadModelLists()
+{
+    DIR *d;
+    struct dirent *dir;
+    d = opendir("./Models");
+    while((dir = readdir(d)) != NULL)
+    {
+        this->model_list.push_back(dir->d_name);
+    }
+    closedir(d);
+}
+
+void Renderer::loadShaderLists()
+{
+    DIR *d;
+    struct dirent *dir;
+    d = opendir("./Shaders");
+    while((dir = readdir(d)) != NULL)
+    {
+        this->shader_list.push_back(dir->d_name);
+    }
+    closedir(d);
 }
