@@ -7,12 +7,17 @@ Model::Model(std::string path)
 
 Model::~Model()
 {
-    std::vector<Mesh>().swap(this->meshes);
-    std::vector<Texture>().swap(this->textures_loaded);
+    //std::vector<Mesh>().swap(this->meshes);
+    //std::vector<Texture>().swap(this->textures_loaded);
+    this->meshes.clear();
+    this->meshes.shrink_to_fit();
+    this->textures_loaded.clear();
+    this->textures_loaded.shrink_to_fit();
 }
 
-void Model::draw(Shader shader)
+void Model::draw(Shader *shader)
 {
+    shader->use();
     for(GLuint i = 0; i < this->meshes.size(); i++)
         this->meshes[i].draw(shader);
 }
@@ -33,6 +38,7 @@ void Model::loadModel(std::string path)
     }
     this->directory = path.substr(0, path.find_last_of('/'));
     this->processNode(scene->mRootNode, scene);
+    import.FreeScene();
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene)

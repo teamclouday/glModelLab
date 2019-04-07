@@ -28,9 +28,9 @@ private:
 public:
     Model(std::string path);
     ~Model();
-    void draw(Shader shader);
+    void draw(Shader *shader);
     bool exists();
-
+private:
     void loadModel(std::string path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);

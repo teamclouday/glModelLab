@@ -15,9 +15,16 @@ Mesh::~Mesh()
     glDeleteBuffers(1, &this->VBO);
     glDeleteVertexArrays(1, &this->VAO);
 
-    std::vector<Vertex>().swap(this->vertices);
-    std::vector<GLuint>().swap(this->indices);
-    std::vector<Texture>().swap(this->textures);
+    //std::vector<Vertex>().swap(this->vertices);
+    //std::vector<GLuint>().swap(this->indices);
+    //std::vector<Texture>().swap(this->textures);
+    this->vertices.clear();
+    this->vertices.shrink_to_fit();
+    this->indices.clear();
+    this->indices.shrink_to_fit();
+    this->textures.clear();
+    this->textures.shrink_to_fit();
+
 }
 
 void Mesh::setupMesh()
@@ -46,7 +53,7 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::draw(Shader shader)
+void Mesh::draw(Shader *shader)
 {
     // name convensions:
     // diffuse texture named: texture_diffuseN
@@ -67,7 +74,7 @@ void Mesh::draw(Shader shader)
             ss << specularNr++;
         number = ss.str();
 
-        glUniform1f(glGetUniformLocation(shader.programID, ("material." + name + number).c_str()), i);
+        glUniform1f(glGetUniformLocation(shader->programID, ("material." + name + number).c_str()), i);
         glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);

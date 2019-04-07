@@ -29,7 +29,7 @@ class Mesh
 public:
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
     ~Mesh();
-    void draw(Shader shader);
+    void draw(Shader *shader);
 private:
     void setupMesh();
     std::vector<Vertex> vertices;

@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include "model.hpp"
 #include "shader.hpp"
@@ -16,17 +17,19 @@ class Renderer
 {
 private:
     ImVec4 clearColor;
+    bool refreshAll;
 
     Model *myModel;
     Shader *myShader;
 
-    int modelIdx;
-    int shaderIdx;
+    std::vector<int> modelIdx;
+    std::vector<int> shaderIdx;
     std::vector<std::string> model_list;
     std::vector<std::string> shader_list;
-    
+
     void loadModelLists();
     void loadShaderLists();
+    void refresh();
 public:
     Renderer(ImVec4 clear_color);
     ~Renderer();

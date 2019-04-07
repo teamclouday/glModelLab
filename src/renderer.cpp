@@ -4,12 +4,12 @@ extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
 extern ImGuiIO* io;
 
-Renderer::Renderer(ImVec4 clear_color)
+Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
 {
     clearColor = clear_color;
     this->myModel = nullptr;
-    this->modelIdx = 0;
-    this->shaderIdx = 0;
+    this->myShader = nullptr;
+    this->refreshAll = false;
 
     this->loadModelLists();
     this->loadShaderLists();
@@ -17,7 +17,18 @@ Renderer::Renderer(ImVec4 clear_color)
 
 Renderer::~Renderer()
 {
-    delete myModel;
+    if(myModel != nullptr)
+        delete myModel;
+    if(myShader != nullptr)
+        delete myShader;
+    modelIdx.clear();
+    modelIdx.shrink_to_fit();
+    shaderIdx.clear();
+    shaderIdx.shrink_to_fit();
+    model_list.clear();
+    model_list.shrink_to_fit();
+    shader_list.clear();
+    shader_list.shrink_to_fit();
 }
 
 void Renderer::startFrame()
@@ -36,6 +47,22 @@ void Renderer::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(myWindow);
+    
+    if(this->modelIdx[0] != this->modelIdx[1])
+    {
+        this->modelIdx[0] = this->modelIdx[1];
+        this->refreshAll = true;
+    }
+    if(this->shaderIdx[0] != this->shaderIdx[1])
+    {
+        this->shaderIdx[0] = this->shaderIdx[1];
+        this->refreshAll = true;
+    }
+    if(this->refreshAll && this->modelIdx[1] != 0 && this->shaderIdx[1] != 0)
+        this->refresh();
+
+    if(this->myModel != nullptr && this->myShader != nullptr)
+        myModel->draw(this->myShader);
 }
 
 void Renderer::setUpImGui()
@@ -54,7 +81,7 @@ void Renderer::setUpImGui()
     {
         for(int i = 2; i < this->model_list.size(); i++)
         {
-            ImGui::RadioButton(model_list[i].c_str(), &this->modelIdx, i);
+            ImGui::RadioButton(model_list[i].c_str(), &this->modelIdx[1], i);
         }
     }
 
@@ -71,7 +98,7 @@ void Renderer::setUpImGui()
     {
         for(int i = 2; i < this->shader_list.size(); i++)
         {
-            ImGui::RadioButton(shader_list[i].c_str(), &this->shaderIdx, i);
+            ImGui::RadioButton(shader_list[i].c_str(), &this->shaderIdx[1], i);
         }
     }
 
@@ -101,4 +128,18 @@ void Renderer::loadShaderLists()
         this->shader_list.push_back(dir->d_name);
     }
     closedir(d);
+}
+
+void Renderer::refresh()
+{
+    if(this->myModel != nullptr)
+        delete this->myModel;
+    if(this->myShader != nullptr)
+        delete this->myShader;
+
+    std::string shaderPath = this->shader_list[this->shaderIdx[1]] + "/" + this->shader_list[this->shaderIdx[1]];
+    this->myShader = new Shader(shaderPath + ".vs", shaderPath + ".fs");
+
+    this->myModel = new Model("./Models/"  + this->model_list[this->modelIdx[1]] + "/scene.gltf");
+    this->refreshAll = false;
 }

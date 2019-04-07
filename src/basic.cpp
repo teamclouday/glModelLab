@@ -44,6 +44,7 @@ void initAll(const std::string title, int width, int height)
         exit(ERROR_GLEW_INIT);
     }
     glViewport(0, 0, width, height);
+    glEnable(GL_DEPTH_TEST);
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
