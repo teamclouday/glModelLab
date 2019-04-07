@@ -9,6 +9,12 @@ Model::~Model()
 {
     //std::vector<Mesh>().swap(this->meshes);
     //std::vector<Texture>().swap(this->textures_loaded);
+    for(int i = 0; i < this->meshes.size(); i++)
+    {
+        glDeleteBuffers(1, &this->meshes[i].VBO);
+        glDeleteBuffers(1, &this->meshes[i].EBO);
+        glDeleteVertexArrays(1, &this->meshes[i].VAO);
+    }
     this->meshes.clear();
     this->meshes.shrink_to_fit();
     this->textures_loaded.clear();
@@ -17,7 +23,6 @@ Model::~Model()
 
 void Model::draw(Shader *shader)
 {
-    shader->use();
     for(GLuint i = 0; i < this->meshes.size(); i++)
         this->meshes[i].draw(shader);
 }

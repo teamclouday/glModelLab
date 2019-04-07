@@ -90,11 +90,6 @@ Shader::Shader(const std::string vertname, const std::string fragname)
     glDeleteShader(fragShader);
 }
 
-Shader::~Shader()
-{
-    glDeleteProgram(this->programID);
-}
-
 void Shader::use()
 {
     if((this->programID))

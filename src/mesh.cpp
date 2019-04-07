@@ -11,10 +11,6 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vecto
 
 Mesh::~Mesh()
 {
-    glDeleteBuffers(1, &this->EBO);
-    glDeleteBuffers(1, &this->VBO);
-    glDeleteVertexArrays(1, &this->VAO);
-
     //std::vector<Vertex>().swap(this->vertices);
     //std::vector<GLuint>().swap(this->indices);
     //std::vector<Texture>().swap(this->textures);
@@ -74,7 +70,7 @@ void Mesh::draw(Shader *shader)
             ss << specularNr++;
         number = ss.str();
 
-        glUniform1f(glGetUniformLocation(shader->programID, ("material." + name + number).c_str()), i);
+        glUniform1f(glGetUniformLocation(shader->programID, ("Material." + name + number).c_str()), i);
         glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);

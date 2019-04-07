@@ -2,7 +2,8 @@
 
 extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
-extern ImGuiIO* io;
+extern ImGuiIO *io;
+extern Camera *camera;
 
 Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
 {
@@ -10,6 +11,7 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->myModel = nullptr;
     this->myShader = nullptr;
     this->refreshAll = false;
+    this->isModelOn = false;
 
     this->loadModelLists();
     this->loadShaderLists();
@@ -40,13 +42,10 @@ void Renderer::startFrame()
 
 void Renderer::render()
 {
-    ImGui::Render();
     SDL_GL_MakeCurrent(myWindow, glContext);
     glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
     glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(myWindow);
     
     if(this->modelIdx[0] != this->modelIdx[1])
     {
@@ -62,7 +61,23 @@ void Renderer::render()
         this->refresh();
 
     if(this->myModel != nullptr && this->myShader != nullptr)
+    {
+        glm::mat4 view = camera->GetViewMatrix();
+        glm::mat4 projection = glm::perspective(45.0f, io->DisplaySize.x/io->DisplaySize.y, 0.1f, 100.0f);
+        glm::mat4 model(1.0f);
+        //model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.05f));
+        this->myShader->use();
+        glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
         myModel->draw(this->myShader);
+    }
+    
+    this->setUpImGui();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(myWindow);
 }
 
 void Renderer::setUpImGui()
@@ -73,7 +88,6 @@ void Renderer::setUpImGui()
 
     ImGui::Begin("Models");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Models List");
-    ImGui::BeginChild("Scrolling");
     
     if(this->model_list.size() <= 2)
         ImGui::Text("No models found under Models folder!");
@@ -85,12 +99,10 @@ void Renderer::setUpImGui()
         }
     }
 
-    ImGui::EndChild();
     ImGui::End();
 
     ImGui::Begin("Shaders");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Shaders List");
-    ImGui::BeginChild("Scrolling");
 
     if(this->shader_list.size() <= 2)
         ImGui::Text("No shaders found under Shaders folder!");
@@ -102,8 +114,13 @@ void Renderer::setUpImGui()
         }
     }
 
-    ImGui::EndChild();
     ImGui::End();
+
+    if(this->isModelOn)
+    {
+        ImGui::Begin("Configs");
+        ImGui::End();
+    }
 }
 
 void Renderer::loadModelLists()
@@ -132,10 +149,15 @@ void Renderer::loadShaderLists()
 
 void Renderer::refresh()
 {
+    if(!this->isModelOn)
+        this->isModelOn = true;
     if(this->myModel != nullptr)
         delete this->myModel;
     if(this->myShader != nullptr)
+    {
+        glDeleteProgram(this->myShader->programID);
         delete this->myShader;
+    }
 
     std::string shaderPath = this->shader_list[this->shaderIdx[1]] + "/" + this->shader_list[this->shaderIdx[1]];
     this->myShader = new Shader(shaderPath + ".vs", shaderPath + ".fs");

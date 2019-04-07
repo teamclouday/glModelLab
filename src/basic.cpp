@@ -5,6 +5,16 @@ extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
 extern ImGuiIO* io;
 extern Renderer *myRenderer;
+extern Camera *camera;
+
+void GLAPIENTRY
+MessageCallback(GLenum source,
+                GLenum type,
+                GLuint id,
+                GLenum severity,
+                GLsizei length,
+                const GLchar* message,
+                const void* userParam);
 
 void initAll(const std::string title, int width, int height)
 {
@@ -45,6 +55,8 @@ void initAll(const std::string title, int width, int height)
     }
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_DEBUG_OUTPUT);
+    // glDebugMessageCallback(MessageCallback, 0);
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -64,7 +76,6 @@ void startLoop()
         quit = pollEvents();
 
         myRenderer->startFrame();
-        myRenderer->setUpImGui();
         myRenderer->render();
     }
 }
@@ -91,6 +102,7 @@ bool pollEvents()
 void destroyAll()
 {
     delete myRenderer;
+    delete camera;
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
@@ -100,3 +112,20 @@ void destroyAll()
     SDL_DestroyWindow(myWindow);
     SDL_Quit();
 }
+
+
+void GLAPIENTRY
+MessageCallback(GLenum source,
+                GLenum type,
+                GLuint id,
+                GLenum severity,
+                GLsizei length,
+                const GLchar* message,
+                const void* userParam)
+{
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+            type, severity, message);
+}
+
+// During init, enable debug output

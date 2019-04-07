@@ -11,7 +11,6 @@ class Shader
 public:
     GLuint programID;
     Shader(const std::string vertName, const std::string fragName);
-    ~Shader();
     void use();
     bool exits();
     // helper functions

@@ -5,7 +5,10 @@
 
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
+
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -20,6 +23,7 @@
 #include "model.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
+#include "camera.hpp"
 
 #define WINDOW_TITLE "Lab"
 #define WINDOW_WIDTH  1366

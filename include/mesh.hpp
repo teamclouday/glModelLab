@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <stdio.h>
 
 #include "shader.hpp"
 
@@ -27,6 +28,7 @@ struct Texture
 class Mesh
 {
 public:
+    GLuint VAO, VBO, EBO;
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
     ~Mesh();
     void draw(Shader *shader);
@@ -35,5 +37,4 @@ private:
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
     std::vector<Texture> textures;
-    GLuint VAO, VBO, EBO;
 };

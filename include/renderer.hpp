@@ -5,6 +5,11 @@
 
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <dirent.h>
 #include <string>
 #include <vector>
@@ -12,12 +17,14 @@
 
 #include "model.hpp"
 #include "shader.hpp"
+#include "camera.hpp"
 
 class Renderer
 {
 private:
     ImVec4 clearColor;
     bool refreshAll;
+    bool isModelOn;
 
     Model *myModel;
     Shader *myShader;
@@ -30,10 +37,10 @@ private:
     void loadModelLists();
     void loadShaderLists();
     void refresh();
+    void setUpImGui();
 public:
     Renderer(ImVec4 clear_color);
     ~Renderer();
     void startFrame();
     void render();
-    void setUpImGui();
 };
