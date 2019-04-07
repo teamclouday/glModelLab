@@ -35,7 +35,18 @@ bool Model::exists()
 void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_SplitLargeMeshes | aiProcess_OptimizeMeshes);
+    const aiScene* scene = import.ReadFile(path, aiProcess_MakeLeftHanded |
+                                                 aiProcess_FlipWindingOrder |
+                                                 aiProcess_FlipUVs |
+                                                 aiProcess_PreTransformVertices |
+                                                 aiProcess_CalcTangentSpace |
+                                                 aiProcess_GenSmoothNormals |
+                                                 aiProcess_Triangulate |
+                                                 aiProcess_FixInfacingNormals |
+                                                 aiProcess_FindInvalidData |
+                                                 aiProcess_ValidateDataStructure |
+                                                 aiProcess_SplitLargeMeshes |
+                                                 aiProcess_OptimizeMeshes);
     if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         printf("Assimp ReadFile error: %s\n", import.GetErrorString());
