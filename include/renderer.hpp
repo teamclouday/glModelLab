@@ -39,6 +39,7 @@ private:
     void refresh();
     void setUpImGui();
 public:
+    bool isFocused;
     Renderer(ImVec4 clear_color);
     ~Renderer();
     void startFrame();

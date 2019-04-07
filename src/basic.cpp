@@ -66,6 +66,7 @@ void initAll(const std::string title, int width, int height)
     // Setup Platform/Renderer bindings
     ImGui_ImplSDL2_InitForOpenGL(myWindow, glContext);
     ImGui_ImplOpenGL3_Init(glsl_version);
+    io->ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 }
 
 void startLoop()
@@ -89,10 +90,35 @@ bool pollEvents()
             return true;
         else if(e.type == SDL_KEYDOWN)
         {
-            switch(e.key.keysym.sym)
+            if(!myRenderer->isFocused)
             {
-                case SDLK_ESCAPE:
-                    return true;
+                switch(e.key.keysym.sym)
+                {
+                    case SDLK_ESCAPE:
+                        return true;
+                }
+            }
+            else
+            {
+                switch(e.key.keysym.sym)
+                {
+                    case SDLK_ESCAPE:
+                    {
+                        myRenderer->isFocused = false;
+                        SDL_ShowCursor(SDL_TRUE);
+                        SDL_CaptureMouse(SDL_FALSE);
+                        break;
+                    }
+                }
+            }   
+        }
+        else if(e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if(!ImGui::IsAnyWindowHovered())
+            {
+                myRenderer->isFocused = true;
+                SDL_ShowCursor(SDL_FALSE);
+                SDL_CaptureMouse(SDL_TRUE);
             }
         }
     }

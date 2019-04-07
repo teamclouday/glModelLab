@@ -12,6 +12,7 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->myShader = nullptr;
     this->refreshAll = false;
     this->isModelOn = false;
+    this->isFocused = false;
 
     this->loadModelLists();
     this->loadShaderLists();
