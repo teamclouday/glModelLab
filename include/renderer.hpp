@@ -26,6 +26,9 @@ private:
     bool refreshAll;
     bool isModelOn;
 
+    float deltaTime;
+    float lastFrame;
+
     Model *myModel;
     Shader *myShader;
 
@@ -39,9 +42,12 @@ private:
     void refresh();
     void setUpImGui();
 public:
+    int xpos, ypos;
+    int ywheel;
     bool isFocused;
     Renderer(ImVec4 clear_color);
     ~Renderer();
     void startFrame();
     void render();
+    void handleMouse(bool isfocused);
 };

@@ -6,6 +6,7 @@ extern SDL_GLContext glContext;
 extern ImGuiIO* io;
 extern Renderer *myRenderer;
 extern Camera *camera;
+extern std::vector<bool> keys;
 
 void GLAPIENTRY
 MessageCallback(GLenum source,
@@ -55,6 +56,7 @@ void initAll(const std::string title, int width, int height)
     }
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
     // glEnable(GL_DEBUG_OUTPUT);
     // glDebugMessageCallback(MessageCallback, 0);
     // Setup Dear ImGui context
@@ -90,6 +92,7 @@ bool pollEvents()
             return true;
         else if(e.type == SDL_KEYDOWN)
         {
+            keys[e.key.keysym.scancode] = true;
             if(!myRenderer->isFocused)
             {
                 switch(e.key.keysym.sym)
@@ -109,9 +112,14 @@ bool pollEvents()
                         SDL_CaptureMouse(SDL_FALSE);
                         break;
                     }
+                    case SDLK_r:
+                        camera->reset();
+                        break;
                 }
             }   
         }
+        else if(e.type == SDL_KEYUP)
+            keys[e.key.keysym.scancode] = false;
         else if(e.type == SDL_MOUSEBUTTONDOWN)
         {
             if(!ImGui::IsAnyWindowHovered())
@@ -119,6 +127,15 @@ bool pollEvents()
                 myRenderer->isFocused = true;
                 SDL_ShowCursor(SDL_FALSE);
                 SDL_CaptureMouse(SDL_TRUE);
+                myRenderer->xpos = (int)(io->DisplaySize.x / 2);
+                myRenderer->ypos = (int)(io->DisplaySize.y / 2);
+            }
+        }
+        else if(e.type == SDL_MOUSEWHEEL)
+        {
+            if(myRenderer->isFocused)
+            {
+                myRenderer->ywheel = e.wheel.y;
             }
         }
     }
@@ -153,5 +170,3 @@ MessageCallback(GLenum source,
            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
             type, severity, message);
 }
-
-// During init, enable debug output

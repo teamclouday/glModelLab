@@ -6,6 +6,7 @@ SDL_GLContext glContext = NULL;
 ImGuiIO* io = nullptr;
 Renderer *myRenderer = nullptr;
 Camera *camera = nullptr;
+std::vector<bool> keys(256, false);
 
 int main(int argc, char *argv[])
 {

@@ -4,6 +4,7 @@ extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
 extern ImGuiIO *io;
 extern Camera *camera;
+extern std::vector<bool> keys;
 
 Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
 {
@@ -13,6 +14,11 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->refreshAll = false;
     this->isModelOn = false;
     this->isFocused = false;
+    this->deltaTime = 0.0f;
+    this->lastFrame = 0.0f;
+    this->xpos = (int)(io->DisplaySize.x / 2);
+    this->ypos = (int)(io->DisplaySize.y / 2);
+    this->ywheel = 0;
 
     this->loadModelLists();
     this->loadShaderLists();
@@ -43,6 +49,12 @@ void Renderer::startFrame()
 
 void Renderer::render()
 {
+    float currentTime = SDL_GetTicks();
+    this->deltaTime = currentTime - this->lastFrame;
+    this->lastFrame = currentTime;
+
+    this->handleMouse(this->isFocused);
+
     SDL_GL_MakeCurrent(myWindow, glContext);
     glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
     glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -165,4 +177,31 @@ void Renderer::refresh()
 
     this->myModel = new Model("./Models/"  + this->model_list[this->modelIdx[1]] + "/scene.gltf");
     this->refreshAll = false;
+}
+
+void Renderer::handleMouse(bool isfocused)
+{
+    if(!isfocused)
+        return;
+    // handle keyboard motion
+    if(keys[SDL_SCANCODE_W])
+        camera->ProcessKeyboard(FORWARD, this->deltaTime);
+    if(keys[SDL_SCANCODE_S])
+        camera->ProcessKeyboard(BACKWARD, this->deltaTime);
+    if(keys[SDL_SCANCODE_A])
+        camera->ProcessKeyboard(LEFT, this->deltaTime);
+    if(keys[SDL_SCANCODE_D])
+        camera->ProcessKeyboard(RIGHT, this->deltaTime);
+    // handle mouse motion
+    int mx, my;
+    SDL_GetMouseState(&mx, &my);
+    float xoffset = (float)(mx - this->xpos);
+    float yoffset = (float)(my - this->ypos);
+    this->xpos = (int)(io->DisplaySize.x / 2);
+    this->ypos = (int)(io->DisplaySize.y / 2);
+    camera->ProcessMouseMovement(xoffset, yoffset);
+    SDL_WarpMouseInWindow(myWindow, this->xpos, this->ypos);
+    // handle mouse scroll
+    camera->ProcessMouseScroll(this->ywheel*0.5f);
+    this->ywheel = 0;
 }
