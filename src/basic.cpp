@@ -8,15 +8,6 @@ extern Renderer *myRenderer;
 extern Camera *camera;
 extern std::vector<bool> keys;
 
-void GLAPIENTRY
-MessageCallback(GLenum source,
-                GLenum type,
-                GLuint id,
-                GLenum severity,
-                GLsizei length,
-                const GLchar* message,
-                const void* userParam);
-
 void initAll(const std::string title, int width, int height)
 {
     if(SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -56,6 +47,7 @@ void initAll(const std::string title, int width, int height)
     }
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     glEnable(GL_MULTISAMPLE);
     // glEnable(GL_DEBUG_OUTPUT);
     // glDebugMessageCallback(MessageCallback, 0);
@@ -148,19 +140,4 @@ void destroyAll()
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(myWindow);
     SDL_Quit();
-}
-
-
-void GLAPIENTRY
-MessageCallback(GLenum source,
-                GLenum type,
-                GLuint id,
-                GLenum severity,
-                GLsizei length,
-                const GLchar* message,
-                const void* userParam)
-{
-    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-           (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-            type, severity, message);
 }

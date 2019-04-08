@@ -11,9 +11,6 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vecto
 
 Mesh::~Mesh()
 {
-    //std::vector<Vertex>().swap(this->vertices);
-    //std::vector<GLuint>().swap(this->indices);
-    //std::vector<Texture>().swap(this->textures);
     this->vertices.clear();
     this->vertices.shrink_to_fit();
     this->indices.clear();
@@ -38,12 +35,10 @@ void Mesh::setupMesh()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), &this->indices[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
-
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Normal));
-
     glEnableVertexAttribArray(2);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Normal));
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, TexCoords));
 
     glBindVertexArray(0);
@@ -70,12 +65,11 @@ void Mesh::draw(Shader *shader)
             ss << specularNr++;
         number = ss.str();
 
-        glUniform1f(glGetUniformLocation(shader->programID, ("Material." + name + number).c_str()), i);
         glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
+        glUniform1i(glGetUniformLocation(shader->programID, ("Material." + name + number).c_str()), i);
     }
 
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
 }

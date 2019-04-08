@@ -41,7 +41,7 @@ bool Model::exists()
 void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_MakeLeftHanded |
+    const aiScene* scene = import.ReadFile(path, aiProcess_ConvertToLeftHanded |
                                                  aiProcess_Triangulate |
                                                  aiProcess_GenUVCoords |
                                                  aiProcess_FlipWindingOrder |
@@ -86,40 +86,27 @@ Mesh *Model::processMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<GLuint> indices;
     std::vector<Texture> textures;
 
+    const aiVector3D aiZeroVector(0.0f, 0.0f, 0.0f);
     for(GLuint i = 0; i < mesh->mNumVertices; i++)
     {
-        Vertex vertex;
-        // process vertex positions, normals, coords
-        glm::vec3 vector;
-        vector.x = mesh->mVertices[i].x;
-        vector.y = mesh->mVertices[i].y;
-        vector.z = mesh->mVertices[i].z;
-        vertex.Position = vector;
+        const aiVector3D* pPos = &(mesh->mVertices[i]);
+		const aiVector3D* pNormal = &(mesh->mNormals[i]);
+		const aiVector3D* pTexCoord = mesh->HasTextureCoords(0) ? &(mesh->mTextureCoords[0][i]) : &aiZeroVector;
 
-        vector.x = mesh->mNormals[i].x;
-        vector.y = mesh->mNormals[i].y;
-        vector.z = mesh->mNormals[i].z;
-        vertex.Normal = vector;
-
-        if(mesh->HasTextureCoords(0))
-        {
-            glm::vec2 vec;
-            vec.x = mesh->mTextureCoords[0][i].x;
-            vec.y = mesh->mTextureCoords[0][i].y;
-            vertex.TexCoords = vec;
-        }
-        else
-            vertex.TexCoords = glm::vec2(0.0f);
+		Vertex vertex = {glm::vec3(pPos->x, pPos->y, pPos->z),
+				         glm::vec3(pNormal->x, pNormal->y, pNormal->z),
+                         glm::vec2(pTexCoord->x, pTexCoord->y)};
 
         vertices.push_back(vertex);
     }
     // process indices
     for(GLuint i = 0; i < mesh->mNumFaces; i++)
     {
-        assert(mesh->mFaces[i].mNumIndices == 3);
-        indices.push_back(mesh->mFaces[i].mIndices[0]);
-        indices.push_back(mesh->mFaces[i].mIndices[1]);
-        indices.push_back(mesh->mFaces[i].mIndices[2]);
+        const aiFace& face = mesh->mFaces[i];
+        assert(face.mNumIndices == 3);
+        indices.push_back(face.mIndices[0]);
+        indices.push_back(face.mIndices[1]);
+        indices.push_back(face.mIndices[2]);
     }
     // process material
     if(mesh->mMaterialIndex >= 0)
@@ -130,6 +117,8 @@ Mesh *Model::processMesh(aiMesh* mesh, const aiScene* scene)
         std::vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
+
+    glFlush();
 
     return new Mesh(vertices, indices, textures);
 }
@@ -155,7 +144,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
             if(!skip)
             {
                 Texture texture;
-                texture.id = loadTextureFromFile(str.C_Str(), this->directory);
+                texture.id = loadTextureFromFile(str.C_Str(), this->directory, false);
                 texture.type = typeName;
                 texture.path = str;
                 textures.push_back(texture);
@@ -174,6 +163,7 @@ GLuint loadTextureFromFile(const std::string filename, const std::string directo
 {
     GLuint textureID;
     glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
     int width, height;
     unsigned char *image = SOIL_load_image(((directory + '/' + filename).c_str()), &width, &height, 0, alpha ? SOIL_LOAD_RGBA : SOIL_LOAD_RGB);
@@ -182,16 +172,20 @@ GLuint loadTextureFromFile(const std::string filename, const std::string directo
         printf("Cannot load texture: %s!\n", filename.c_str());
         return 0;
     }
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    // configure texture
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, alpha ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, alpha ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-    // end of configure texture
     glTexImage2D(GL_TEXTURE_2D, 0, alpha ? GL_RGBA : GL_RGB, width, height, 0, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
+    // configure texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, alpha ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, alpha ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+    // end of configure texture
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
     SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     return textureID;
 }

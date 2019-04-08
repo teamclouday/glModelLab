@@ -76,7 +76,7 @@ void Renderer::render()
     if(this->myModel != nullptr && this->myShader != nullptr)
     {
         glm::mat4 view = camera->GetViewMatrix();
-        glm::mat4 projection = glm::perspective(45.0f, io->DisplaySize.x/io->DisplaySize.y, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(45.0f, (io->DisplaySize.x/io->DisplaySize.y), 0.1f, 1000.0f);
         glm::mat4 model(1.0f);
         model = glm::scale(model, glm::vec3(this->zoomLevel));
         this->myShader->use();
