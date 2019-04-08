@@ -126,16 +126,10 @@ bool pollEvents()
             {
                 myRenderer->isFocused = true;
                 SDL_ShowCursor(SDL_FALSE);
-                SDL_CaptureMouse(SDL_TRUE);
                 myRenderer->xpos = (int)(io->DisplaySize.x / 2);
                 myRenderer->ypos = (int)(io->DisplaySize.y / 2);
-            }
-        }
-        else if(e.type == SDL_MOUSEWHEEL)
-        {
-            if(myRenderer->isFocused)
-            {
-                myRenderer->ywheel = e.wheel.y;
+                SDL_WarpMouseInWindow(myWindow, myRenderer->xpos, myRenderer->ypos);
+                SDL_CaptureMouse(SDL_TRUE);
             }
         }
     }

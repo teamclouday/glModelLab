@@ -29,6 +29,8 @@ private:
     float deltaTime;
     float lastFrame;
 
+    float zoomLevel;
+
     Model *myModel;
     Shader *myShader;
 
@@ -43,7 +45,6 @@ private:
     void setUpImGui();
 public:
     int xpos, ypos;
-    int ywheel;
     bool isFocused;
     Renderer(ImVec4 clear_color);
     ~Renderer();

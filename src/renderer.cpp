@@ -18,7 +18,7 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->lastFrame = 0.0f;
     this->xpos = (int)(io->DisplaySize.x / 2);
     this->ypos = (int)(io->DisplaySize.y / 2);
-    this->ywheel = 0;
+    this->zoomLevel = 0.8f;
 
     this->loadModelLists();
     this->loadShaderLists();
@@ -78,8 +78,7 @@ void Renderer::render()
         glm::mat4 view = camera->GetViewMatrix();
         glm::mat4 projection = glm::perspective(45.0f, io->DisplaySize.x/io->DisplaySize.y, 0.1f, 100.0f);
         glm::mat4 model(1.0f);
-        //model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.05f));
+        model = glm::scale(model, glm::vec3(this->zoomLevel));
         this->myShader->use();
         glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -132,6 +131,7 @@ void Renderer::setUpImGui()
     if(this->isModelOn)
     {
         ImGui::Begin("Configs");
+        ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
         ImGui::End();
     }
 }
@@ -201,7 +201,4 @@ void Renderer::handleMouse(bool isfocused)
     this->ypos = (int)(io->DisplaySize.y / 2);
     camera->ProcessMouseMovement(xoffset, yoffset);
     SDL_WarpMouseInWindow(myWindow, this->xpos, this->ypos);
-    // handle mouse scroll
-    camera->ProcessMouseScroll(this->ywheel*0.5f);
-    this->ywheel = 0;
 }
