@@ -6,6 +6,8 @@ extern ImGuiIO *io;
 extern Camera *camera;
 extern std::vector<bool> keys;
 
+std::string findModelName(std::string folderPath);
+
 Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
 {
     clearColor = clear_color;
@@ -105,7 +107,7 @@ void Renderer::setUpImGui()
         ImGui::Text("No models found under Models folder!");
     else
     {
-        for(int i = 2; i < this->model_list.size(); i++)
+        for(unsigned i = 2; i < this->model_list.size(); i++)
         {
             ImGui::RadioButton(model_list[i].c_str(), &this->modelIdx[1], i);
         }
@@ -120,7 +122,7 @@ void Renderer::setUpImGui()
         ImGui::Text("No shaders found under Shaders folder!");
     else
     {
-        for(int i = 2; i < this->shader_list.size(); i++)
+        for(unsigned i = 2; i < this->shader_list.size(); i++)
         {
             ImGui::RadioButton(shader_list[i].c_str(), &this->shaderIdx[1], i);
         }
@@ -175,7 +177,9 @@ void Renderer::refresh()
     std::string shaderPath = this->shader_list[this->shaderIdx[1]] + "/" + this->shader_list[this->shaderIdx[1]];
     this->myShader = new Shader(shaderPath + ".vs", shaderPath + ".fs");
 
-    this->myModel = new Model("./Models/"  + this->model_list[this->modelIdx[1]] + "/scene.gltf");
+    std::string modelName = findModelName("./Models/"  + this->model_list[this->modelIdx[1]]);
+
+    this->myModel = new Model("./Models/"  + this->model_list[this->modelIdx[1]] + "/" + modelName);
     this->refreshAll = false;
 }
 
@@ -201,4 +205,29 @@ void Renderer::handleMouse(bool isfocused)
     this->ypos = (int)(io->DisplaySize.y / 2);
     camera->ProcessMouseMovement(xoffset, yoffset);
     SDL_WarpMouseInWindow(myWindow, this->xpos, this->ypos);
+}
+
+std::string findModelName(std::string folderPath)
+{
+    std::string model = "";
+    DIR *dir;
+    struct dirent *ent;
+    dir = opendir(folderPath.c_str());
+    while ((ent = readdir (dir)) != NULL) {
+        std::string filename = std::string(ent->d_name);
+        std::string ext = filename.substr(filename.find_last_of(".") + 1);
+        if(ext == "obj" ||
+           ext == "3ds" ||
+           ext == "gltf" ||
+           ext == "fbx" ||
+           ext == "dae" ||
+           ext == "dxf" ||
+           ext == "stl")
+        {
+            model = filename;
+            break;
+        }
+    }
+    closedir (dir);
+    return model;
 }

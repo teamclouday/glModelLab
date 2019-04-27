@@ -69,9 +69,9 @@ void startLoop()
     while(!quit)
     {
         quit = pollEvents();
-
         myRenderer->startFrame();
         myRenderer->render();
+        SDL_Delay(10);
     }
 }
 
@@ -105,8 +105,18 @@ bool pollEvents()
                         break;
                     }
                     case SDLK_r:
+                    {
                         camera->reset();
                         break;
+                    }
+                    case SDLK_F11:
+                    {
+                        bool isFullScreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+                        SDL_SetWindowFullscreen(myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+                        if(isFullScreen)
+                            SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                        break;
+                    }
                 }
             }   
         }
@@ -122,6 +132,14 @@ bool pollEvents()
                 myRenderer->ypos = (int)(io->DisplaySize.y / 2);
                 SDL_WarpMouseInWindow(myWindow, myRenderer->xpos, myRenderer->ypos);
                 SDL_CaptureMouse(SDL_TRUE);
+            }
+        }
+        else if(e.type == SDL_WINDOWEVENT)
+        {
+            switch(e.window.event)
+            {
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                    glViewport(0, 0, e.window.data1, e.window.data2);
             }
         }
     }

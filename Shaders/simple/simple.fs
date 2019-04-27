@@ -12,6 +12,6 @@ uniform Material material;
 
 void main()
 {
-    color = texture(material.texture_diffuse1, TexCoords);
+    color = texture(material.texture_specular1, TexCoords);
     //color = vec4(1.0);
 }

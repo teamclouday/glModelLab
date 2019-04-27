@@ -41,23 +41,24 @@ bool Model::exists()
 void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_ConvertToLeftHanded |
-                                                 aiProcess_Triangulate |
-                                                 aiProcess_GenUVCoords |
-                                                 aiProcess_FlipWindingOrder |
-                                                 aiProcess_FlipUVs |
-                                                 aiProcess_TransformUVCoords |
-                                                 aiProcess_PreTransformVertices |
+    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate |
                                                  aiProcess_CalcTangentSpace |
-                                                 aiProcess_GenSmoothNormals |
                                                  aiProcess_JoinIdenticalVertices |
+                                                 aiProcess_MakeLeftHanded |
+                                                 aiProcess_GenSmoothNormals |
+                                                 aiProcess_RemoveComponent |
+                                                 aiProcess_SplitLargeMeshes |
+                                                 aiProcess_PreTransformVertices |
+                                                 aiProcess_ValidateDataStructure |
+                                                 aiProcess_ImproveCacheLocality |
+                                                 // aiProcess_RemoveRedundantMaterials |
                                                  aiProcess_FixInfacingNormals |
                                                  aiProcess_FindInvalidData |
-                                                 aiProcess_ValidateDataStructure |
-                                                 aiProcess_SplitLargeMeshes |
-                                                 aiProcess_OptimizeMeshes |
-                                                 aiProcess_RemoveRedundantMaterials |
-                                                 aiProcess_ImproveCacheLocality);
+                                                 aiProcess_TransformUVCoords |
+                                                 aiProcess_FindInstances |
+                                                 aiProcess_FlipUVs |
+                                                 aiProcess_OptimizeMeshes
+                                                 );
     if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         printf("Assimp ReadFile error: %s\n", import.GetErrorString());
@@ -175,15 +176,11 @@ GLuint loadTextureFromFile(const std::string filename, const std::string directo
     glTexImage2D(GL_TEXTURE_2D, 0, alpha ? GL_RGBA : GL_RGB, width, height, 0, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
     // configure texture
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, alpha ? GL_CLAMP_TO_EDGE : GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, alpha ? GL_CLAMP_TO_EDGE : GL_REPEAT);
     // end of configure texture
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
     SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
 
