@@ -11,11 +11,12 @@ out vec4 color;
 uniform Material material;
 layout (binding = 0) uniform myTime
 {
-    float tt;
+    float varSin;
+    float varCos;
 } tc;
 
 void main()
 {
     vec4 c = texture(material.texture_specular1, TexCoords);
-    color = vec4(c.x, c.y * cos(tc.tt / 100), c.z * sin(tc.tt / 100), 1.0);
+    color = vec4(c.x * tc.varSin, c.y * tc.varCos, c.z * tc.varSin, 1.0);
 }

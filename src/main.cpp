@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
     Uint32 now = SDL_GetTicks();
 
     GLuint timeBuffer;
-    glGenBuffers(1, &timeBuffer);
+    glCreateBuffers(1, &timeBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, timeBuffer);
-    glBufferStorage(GL_UNIFORM_BUFFER, sizeof(GLfloat), NULL, GL_DYNAMIC_COPY);
+    glBufferStorage(GL_UNIFORM_BUFFER, 2*sizeof(GLfloat), NULL, GL_DYNAMIC_STORAGE_BIT);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, timeBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -32,7 +32,10 @@ int main(int argc, char *argv[])
         myRenderer->startFrame();
 
         float tc = (float)(SDL_GetTicks() / 1000.0f);
-        glNamedBufferSubData(timeBuffer, 0, sizeof(GLfloat), &tc);
+        float varSin = sin(tc)*0.4f + 0.5f;
+        float varCos = cos(tc)*0.4f + 0.5f;
+        glNamedBufferSubData(timeBuffer, 0, sizeof(GLfloat), &varSin);
+        glNamedBufferSubData(timeBuffer, sizeof(GLfloat), sizeof(GLfloat), &varCos);
 
         myRenderer->render();
         timer(&now, &prev);
