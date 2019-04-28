@@ -16,10 +16,10 @@ void initAll(const std::string title, int width, int height)
         exit(ERROR_SDL_INIT);
     }
     // set up OpenGL
-    const char* glsl_version = "#version 330";
+    const char* glsl_version = "#version 450";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -63,16 +63,13 @@ void initAll(const std::string title, int width, int height)
     io->ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 }
 
-void startLoop()
+void timer(Uint32 *now, Uint32 *prev)
 {
-    bool quit = false;
-    while(!quit)
-    {
-        quit = pollEvents();
-        myRenderer->startFrame();
-        myRenderer->render();
-        SDL_Delay(10);
-    }
+    *now = SDL_GetTicks();
+    Uint32 delta = *now - *prev;
+    if(delta < (1000 / FPS))
+        SDL_Delay((Uint32)(1000 / FPS) - delta);
+    *prev = *now;
 }
 
 bool pollEvents()

@@ -29,8 +29,10 @@
 #define WINDOW_WIDTH  1366
 #define WINDOW_HEIGHT 768
 
+#define FPS 60
+
 // functions
 void initAll(const std::string title=WINDOW_TITLE, int width=WINDOW_WIDTH, int height=WINDOW_HEIGHT);
-void startLoop();
+void timer(Uint32 *now, Uint32 *prev);
 bool pollEvents();
 void destroyAll();
