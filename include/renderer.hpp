@@ -29,7 +29,9 @@ private:
     bool displayShaders;
     bool displayInfo;
 
-    bool displayConfigBasic;
+    bool displayConfigBack;
+    bool displayConfigModel;
+    bool displayConfigLight;
 
     float deltaTime;
     float lastFrame;
@@ -52,8 +54,10 @@ public:
     float zoomLevel;
     int xpos, ypos;
     bool isFocused;
+
     Renderer(ImVec4 clear_color);
     ~Renderer();
+    
     void startFrame();
     void render();
     void handleMouse(bool isfocused);

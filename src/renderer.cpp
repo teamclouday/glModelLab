@@ -17,7 +17,9 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->displayModels = false;
     this->displayShaders = false;
     this->displayInfo = false;
-    this->displayConfigBasic = false;
+    this->displayConfigBack = false;
+    this->displayConfigModel = false;
+    this->displayConfigLight = false;
     this->deltaTime = 0.0f;
     this->lastFrame = (float)SDL_GetTicks();
     this->xpos = (int)(io->DisplaySize.x / 2);
@@ -105,6 +107,8 @@ void Renderer::setUpImGui()
     {
         ImGui::MenuItem("Models", NULL, &this->displayModels);
         ImGui::MenuItem("Shaders", NULL, &this->displayShaders);
+        ImGui::MenuItem("Cubemaps", NULL);
+        // TODO: add cubemap support
         if(ImGui::MenuItem("Quit", "ECS"))
             exit(0);
         ImGui::EndMenu();
@@ -112,7 +116,10 @@ void Renderer::setUpImGui()
 
     if(ImGui::BeginMenu("Configs"))
     {
-        ImGui::MenuItem("Basic", NULL, &this->displayConfigBasic);
+        ImGui::MenuItem("Background", NULL, &this->displayConfigBack);
+        ImGui::MenuItem("Model", NULL, &this->displayConfigModel);
+        ImGui::MenuItem("SourceLight", NULL, &this->displayConfigLight);
+        
         ImGui::EndMenu();
     }
 
@@ -155,16 +162,33 @@ void Renderer::setUpImGui()
     ImGui::End();
     }
 
-    if(this->displayConfigBasic)
+    if(this->displayConfigBack ||
+       this->displayConfigModel ||
+       this->displayConfigLight)
     {
     ImGui::SetNextWindowPos(ImVec2(20.0f, io->DisplaySize.y - 220.0f));
     ImGui::SetNextWindowSize(ImVec2(io->DisplaySize.x*0.45f, 200.0f));
-    ImGui::Begin("Config");
+    ImGui::Begin("Configs");
 
-    if(this->displayConfigBasic)
+    if(this->displayConfigBack)
     {
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Background Configs");
+        ImGui::Spacing();
         ImGui::ColorEdit3("Background Color",  (float*)&clearColor);
+    }
+    if(this->displayConfigModel)
+    {
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model Configs");
+        ImGui::Spacing();
         ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
+    }
+    if(this->displayConfigLight)
+    {
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Light Configs");
+        ImGui::Spacing();
     }
 
     ImGui::End();
