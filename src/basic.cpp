@@ -69,7 +69,7 @@ void timer(Uint32 *now, Uint32 *prev)
     Uint32 delta = *now - *prev;
     if(delta < (1000 / FPS))
         SDL_Delay((Uint32)(1000 / FPS) - delta);
-    *prev = *now;
+    *prev = SDL_GetTicks();
 }
 
 bool pollEvents()

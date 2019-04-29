@@ -25,6 +25,12 @@ private:
     ImVec4 clearColor;
     bool refreshAll;
 
+    bool displayModels;
+    bool displayShaders;
+    bool displayInfo;
+
+    bool displayConfigBasic;
+
     float deltaTime;
     float lastFrame;
 
@@ -35,6 +41,8 @@ private:
     std::vector<int> shaderIdx;
     std::vector<std::string> model_list;
     std::vector<std::string> shader_list;
+
+    std::vector<SourceLight*> sourceLights;
 
     void loadModelLists();
     void loadShaderLists();

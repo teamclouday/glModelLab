@@ -22,7 +22,6 @@ int main(int argc, char *argv[])
     {
         quit = pollEvents();
         myRenderer->startFrame();
-
         myRenderer->render();
         timer(&now, &prev);
     }

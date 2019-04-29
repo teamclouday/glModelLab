@@ -14,8 +14,12 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->myShader = nullptr;
     this->refreshAll = false;
     this->isFocused = false;
+    this->displayModels = false;
+    this->displayShaders = false;
+    this->displayInfo = false;
+    this->displayConfigBasic = false;
     this->deltaTime = 0.0f;
-    this->lastFrame = 0.0f;
+    this->lastFrame = (float)SDL_GetTicks();
     this->xpos = (int)(io->DisplaySize.x / 2);
     this->ypos = (int)(io->DisplaySize.y / 2);
     this->zoomLevel = 0.8f;
@@ -49,7 +53,7 @@ void Renderer::startFrame()
 
 void Renderer::render()
 {
-    float currentTime = SDL_GetTicks();
+    float currentTime = (float)SDL_GetTicks();
     this->deltaTime = currentTime - this->lastFrame;
     this->lastFrame = currentTime;
 
@@ -94,19 +98,85 @@ void Renderer::render()
 
 void Renderer::setUpImGui()
 {
-    ImGui::SetNextWindowPos(ImVec2(20.0f, io->DisplaySize.y - 220.0f));
-    ImGui::SetNextWindowSize(ImVec2(io->DisplaySize.x*0.45f, 200.0f));
-    ImGui::Begin("Configs");
-    ImGui::ColorEdit3("Background Color",  (float*)&clearColor);
-    ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
-    
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 8.0f));
+    ImGui::BeginMainMenuBar();
+
+    if(ImGui::BeginMenu("File"))
+    {
+        ImGui::MenuItem("Models", NULL, &this->displayModels);
+        ImGui::MenuItem("Shaders", NULL, &this->displayShaders);
+        if(ImGui::MenuItem("Quit", "ECS"))
+            exit(0);
+        ImGui::EndMenu();
+    }
+
+    if(ImGui::BeginMenu("Configs"))
+    {
+        ImGui::MenuItem("Basic", NULL, &this->displayConfigBasic);
+        ImGui::EndMenu();
+    }
+
+    if(ImGui::BeginMenu("Help"))
+    {
+        if(ImGui::MenuItem("Toggle Fullscreen", "F11"))
+        {
+            bool isFullScreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+            SDL_SetWindowFullscreen(myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+            if(isFullScreen)
+                SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        }
+        ImGui::MenuItem("Info", NULL, &this->displayInfo);
+        ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
+    ImGui::PopStyleVar();
+
+    if(this->displayInfo)
+    {
+    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x*0.6f - 20.0f, io->DisplaySize.y - 220.0f));
+    ImGui::SetNextWindowSize(ImVec2(io->DisplaySize.x*0.4f, 200.0f));
+    ImGui::Begin("Info");
+
+    ImGui::Text("Current FPS: %.1f", io->Framerate);
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Text("About this project:");
+    ImGui::Text("ModelLab -- a project made to experiment with OpenGL");
+    ImGui::Text("Author: teamclouday  Email: teamclouday@gmail.com");
+    ImGui::Text("Built with glew, sdl2, imgui, assimp, glm and soil");
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Text("System Info:");
+    ImGui::Text("GPU: %s", glGetString(GL_RENDERER));
+    ImGui::Text("OpenGL Version: %s", glGetString(GL_VERSION));
+    ImGui::Text("glsl version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     ImGui::End();
+    }
 
-    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x - 280.0f, 30.0f));
+    if(this->displayConfigBasic)
+    {
+    ImGui::SetNextWindowPos(ImVec2(20.0f, io->DisplaySize.y - 220.0f));
+    ImGui::SetNextWindowSize(ImVec2(io->DisplaySize.x*0.45f, 200.0f));
+    ImGui::Begin("Config");
+
+    if(this->displayConfigBasic)
+    {
+        ImGui::ColorEdit3("Background Color",  (float*)&clearColor);
+        ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
+    }
+
+    ImGui::End();
+    }
+
+    if(this->displayModels)
+    {
+    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x - 280.0f, 40.0f));
     ImGui::SetNextWindowSize(ImVec2(250.0f, io->DisplaySize.y * 0.35f));
     ImGui::Begin("Models");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Models List");
+    ImGui::Spacing();
     
     if(this->model_list.size() <= 2)
         ImGui::Text("No models found under Models folder!");
@@ -119,11 +189,15 @@ void Renderer::setUpImGui()
     }
 
     ImGui::End();
+    }
 
-    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x - 280.0f, io->DisplaySize.y*0.4f + 30.0f));
+    if(this->displayShaders)
+    {
+    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x - 280.0f, io->DisplaySize.y*0.4f + 40.0f));
     ImGui::SetNextWindowSize(ImVec2(250.0f, io->DisplaySize.y*0.25f));
     ImGui::Begin("Shaders");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Shaders List");
+    ImGui::Spacing();
 
     if(this->shader_list.size() <= 2)
         ImGui::Text("No shaders found under Shaders folder!");
@@ -136,6 +210,7 @@ void Renderer::setUpImGui()
     }
 
     ImGui::End();
+    }
 }
 
 void Renderer::loadModelLists()

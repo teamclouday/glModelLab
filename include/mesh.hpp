@@ -25,6 +25,13 @@ struct Texture
     aiString path;
 };
 
+struct SourceLight
+{
+    float x;
+    float y;
+    float z;
+};
+
 class Mesh
 {
 public:
