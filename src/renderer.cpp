@@ -25,6 +25,12 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->xpos = (int)(io->DisplaySize.x / 2);
     this->ypos = (int)(io->DisplaySize.y / 2);
     this->zoomLevel = 0.8f;
+    
+    glCreateBuffers(1, &this->lightBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, this->lightBuffer);
+    glBufferStorage(GL_UNIFORM_BUFFER, 5*sizeof(SourceLight), NULL, GL_DYNAMIC_STORAGE_BIT);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, this->lightBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     this->loadModelLists();
     this->loadShaderLists();
@@ -44,6 +50,8 @@ Renderer::~Renderer()
     model_list.shrink_to_fit();
     shader_list.clear();
     shader_list.shrink_to_fit();
+    myLights.clear();
+    myLights.shrink_to_fit();
 }
 
 void Renderer::startFrame()
@@ -80,22 +88,27 @@ void Renderer::render()
         this->refresh();
 
     if(this->myModel != nullptr && this->myShader != nullptr)
-    {
-        glm::mat4 view = camera->GetViewMatrix();
-        glm::mat4 projection = glm::perspective(45.0f, (io->DisplaySize.x/io->DisplaySize.y), 0.1f, 1000.0f);
-        glm::mat4 model(1.0f);
-        model = glm::scale(model, glm::vec3(this->zoomLevel));
-        this->myShader->use();
-        glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        myModel->draw(this->myShader);
-    }
+        this->glRenderAll();
     
     this->setUpImGui();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(myWindow);
+}
+
+void Renderer::glRenderAll()
+{
+    glm::mat4 view = camera->GetViewMatrix();
+    glm::mat4 projection = glm::perspective(45.0f, (io->DisplaySize.x/io->DisplaySize.y), 0.1f, 1000.0f);
+    glm::mat4 model(0.5f);
+    model = glm::scale(model, glm::vec3(this->zoomLevel));
+    this->myShader->use();
+    glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniform3fv(glGetUniformLocation(this->myShader->programID, "CameraPos"), 1, glm::value_ptr(camera->Position));
+    glUniform1i(glGetUniformLocation(this->myShader->programID, "LightNum"), (GLint)(this->myLights.size()));
+    myModel->draw(this->myShader);
 }
 
 void Renderer::setUpImGui()
@@ -146,6 +159,7 @@ void Renderer::setUpImGui()
     ImGui::Begin("Info");
 
     ImGui::Text("Current FPS: %.1f", io->Framerate);
+    ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera->Position.x, camera->Position.y, camera->Position.z);
     ImGui::Spacing();
     ImGui::Spacing();
     ImGui::Text("About this project:");
@@ -189,6 +203,42 @@ void Renderer::setUpImGui()
         ImGui::Spacing();
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Light Configs");
         ImGui::Spacing();
+        if(this->myLights.size() < 5)
+        {
+            if(ImGui::Button("Add Light"))
+            {
+                SourceLight *newLight = new SourceLight();
+                newLight->position = glm::vec4(200.0f, 200.0f, 200.0f, 0.0f);
+                newLight->color = glm::vec3(1.0f);
+                newLight->attenuation = 0.2f;
+                newLight->ambientCoeff = 0.5f;
+                newLight->coneAngle = 0.0f;
+                myLights.push_back(newLight);
+            }
+        }
+        if(this->myLights.size() > 0)
+        {
+            if(ImGui::Button("Delete Light"))
+            {
+                SourceLight *lastLight = myLights[myLights.size()-1];
+                myLights.pop_back();
+                delete lastLight;
+            }
+        }
+        if(this->myShader != nullptr)
+            this->myShader->use();
+        for(unsigned i = 0; i < myLights.size(); i++)
+        {
+            glNamedBufferSubData(this->lightBuffer, i*(sizeof(SourceLight)), sizeof(SourceLight), myLights[i]);
+            ImGui::Spacing();
+            ImGui::Text("Light %u", i+1);
+            ImGui::Spacing();
+            ImGui::InputFloat4("Light Position", glm::value_ptr(myLights[i]->position));
+            ImGui::ColorEdit3("Light Color", glm::value_ptr(myLights[i]->color));
+            ImGui::DragFloat("Light Attenuation", &(myLights[i]->attenuation), 0.001f, 0.0f, 1.0f);
+            ImGui::DragFloat("Light Ambient Coefficient", &(myLights[i]->ambientCoeff), 0.001f, 0.0f, 1.0f);
+            ImGui::DragFloat("Light Cone Angle", &(myLights[i]->coneAngle), 0.1f, 0.0f, 80.0f);
+        }
     }
 
     ImGui::End();

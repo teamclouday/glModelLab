@@ -18,6 +18,7 @@
 #include "model.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
+#include "myerr.hpp"
 
 class Renderer
 {
@@ -43,13 +44,14 @@ private:
     std::vector<int> shaderIdx;
     std::vector<std::string> model_list;
     std::vector<std::string> shader_list;
-
-    std::vector<SourceLight*> sourceLights;
+    std::vector<SourceLight*> myLights;
+    GLuint lightBuffer;
 
     void loadModelLists();
     void loadShaderLists();
     void refresh();
     void setUpImGui();
+    void glRenderAll();
 public:
     float zoomLevel;
     int xpos, ypos;
@@ -57,7 +59,7 @@ public:
 
     Renderer(ImVec4 clear_color);
     ~Renderer();
-    
+
     void startFrame();
     void render();
     void handleMouse(bool isfocused);

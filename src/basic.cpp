@@ -47,6 +47,7 @@ void initAll(const std::string title, int width, int height)
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+    // glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
     // glEnable(GL_DEBUG_OUTPUT);
     // glDebugMessageCallback(MessageCallback, 0);
