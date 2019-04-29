@@ -94,6 +94,8 @@ void Renderer::render()
 
 void Renderer::setUpImGui()
 {
+    ImGui::SetNextWindowPos(ImVec2(20.0f, io->DisplaySize.y - 120.0f));
+    ImGui::SetNextWindowSize(ImVec2(io->DisplaySize.x*0.35f, 100.0f));
     ImGui::Begin("Configs");
     ImGui::ColorEdit3("Background Color",  (float*)&clearColor);
     ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
@@ -101,6 +103,8 @@ void Renderer::setUpImGui()
 
     ImGui::End();
 
+    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x - 280.0f, 30.0f));
+    ImGui::SetNextWindowSize(ImVec2(250.0f, io->DisplaySize.y * 0.35f));
     ImGui::Begin("Models");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Models List");
     
@@ -116,6 +120,8 @@ void Renderer::setUpImGui()
 
     ImGui::End();
 
+    ImGui::SetNextWindowPos(ImVec2(io->DisplaySize.x - 280.0f, io->DisplaySize.y*0.4f + 30.0f));
+    ImGui::SetNextWindowSize(ImVec2(250.0f, io->DisplaySize.y*0.25f));
     ImGui::Begin("Shaders");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Shaders List");
 

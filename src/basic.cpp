@@ -60,6 +60,7 @@ void initAll(const std::string title, int width, int height)
     ImGui_ImplSDL2_InitForOpenGL(myWindow, glContext);
     ImGui_ImplOpenGL3_Init(glsl_version);
     io->ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+    io->IniFilename = NULL;
 }
 
 void timer(Uint32 *now, Uint32 *prev)
@@ -88,6 +89,14 @@ bool pollEvents()
                 {
                     case SDLK_ESCAPE:
                         return true;
+                    case SDLK_F11:
+                    {
+                        bool isFullScreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+                        SDL_SetWindowFullscreen(myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+                        if(isFullScreen)
+                            SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                        break;
+                    }
                 }
             }
             else
@@ -138,6 +147,17 @@ bool pollEvents()
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     glViewport(0, 0, e.window.data1, e.window.data2);
             }
+        }
+        else if(e.type == SDL_MOUSEWHEEL)
+        {
+            if(e.wheel.y > 0)
+                myRenderer->zoomLevel += 0.005f;
+            else
+                myRenderer->zoomLevel -= 0.005f;
+            if(myRenderer->zoomLevel > 1.0f)
+                myRenderer->zoomLevel = 1.0f;
+            if(myRenderer->zoomLevel < 0.0f)
+                myRenderer->zoomLevel = 0.0f;
         }
     }
     return false;
