@@ -9,7 +9,7 @@ Model::~Model()
 {
     //std::vector<Mesh>().swap(this->meshes);
     //std::vector<Texture>().swap(this->textures_loaded);
-    for(int i = 0; i < this->meshes.size(); i++)
+    for(unsigned i = 0; i < this->meshes.size(); i++)
     {
         glDeleteBuffers(1, &this->meshes[i]->VBO);
         glDeleteBuffers(1, &this->meshes[i]->EBO);
@@ -17,7 +17,7 @@ Model::~Model()
         delete this->meshes[i];
 
     }
-    for(int i = 0; i < this->textures_loaded.size(); i++)
+    for(unsigned i = 0; i < this->textures_loaded.size(); i++)
     {
         glDeleteTextures(1, &this->textures_loaded[i].id);
     }
