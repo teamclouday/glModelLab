@@ -6,7 +6,6 @@ extern SDL_GLContext glContext;
 extern ImGuiIO* io;
 extern Renderer *myRenderer;
 extern Camera *camera;
-extern std::vector<bool> keys;
 
 void initAll(const std::string title, int width, int height)
 {
@@ -77,11 +76,12 @@ bool pollEvents()
     SDL_Event e;
     while(SDL_PollEvent(&e))
     {
+        ImGui_ImplSDL2_ProcessEvent(&e);
         if(e.type == SDL_QUIT)
             return true;
         else if(e.type == SDL_KEYDOWN)
         {
-            keys[e.key.keysym.scancode] = true;
+            io->KeysDown[e.key.keysym.scancode] = true;
             if(!myRenderer->isFocused)
             {
                 switch(e.key.keysym.sym)
@@ -118,7 +118,7 @@ bool pollEvents()
             }   
         }
         else if(e.type == SDL_KEYUP)
-            keys[e.key.keysym.scancode] = false;
+            io->KeysDown[e.key.keysym.scancode] = false;
         else if(e.type == SDL_MOUSEBUTTONDOWN)
         {
             if(!ImGui::IsAnyWindowHovered())

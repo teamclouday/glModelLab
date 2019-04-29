@@ -4,7 +4,6 @@ extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
 extern ImGuiIO *io;
 extern Camera *camera;
-extern std::vector<bool> keys;
 
 std::string findModelName(std::string folderPath);
 
@@ -14,7 +13,6 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->myModel = nullptr;
     this->myShader = nullptr;
     this->refreshAll = false;
-    this->isModelOn = false;
     this->isFocused = false;
     this->deltaTime = 0.0f;
     this->lastFrame = 0.0f;
@@ -96,8 +94,11 @@ void Renderer::render()
 
 void Renderer::setUpImGui()
 {
-    ImGui::Begin("Colors");
+    ImGui::Begin("Configs");
     ImGui::ColorEdit3("Background Color",  (float*)&clearColor);
+    ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
+    
+
     ImGui::End();
 
     ImGui::Begin("Models");
@@ -129,13 +130,6 @@ void Renderer::setUpImGui()
     }
 
     ImGui::End();
-
-    if(this->isModelOn)
-    {
-        ImGui::Begin("Configs");
-        ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
-        ImGui::End();
-    }
 }
 
 void Renderer::loadModelLists()
@@ -164,8 +158,6 @@ void Renderer::loadShaderLists()
 
 void Renderer::refresh()
 {
-    if(!this->isModelOn)
-        this->isModelOn = true;
     if(this->myModel != nullptr)
         delete this->myModel;
     if(this->myShader != nullptr)
@@ -188,13 +180,13 @@ void Renderer::handleMouse(bool isfocused)
     if(!isfocused)
         return;
     // handle keyboard motion
-    if(keys[SDL_SCANCODE_W])
+    if(io->KeysDown[SDL_SCANCODE_W])
         camera->ProcessKeyboard(FORWARD, this->deltaTime);
-    if(keys[SDL_SCANCODE_S])
+    if(io->KeysDown[SDL_SCANCODE_S])
         camera->ProcessKeyboard(BACKWARD, this->deltaTime);
-    if(keys[SDL_SCANCODE_A])
+    if(io->KeysDown[SDL_SCANCODE_A])
         camera->ProcessKeyboard(LEFT, this->deltaTime);
-    if(keys[SDL_SCANCODE_D])
+    if(io->KeysDown[SDL_SCANCODE_D])
         camera->ProcessKeyboard(RIGHT, this->deltaTime);
     // handle mouse motion
     int mx, my;

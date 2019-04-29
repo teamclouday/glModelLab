@@ -24,7 +24,6 @@ class Renderer
 private:
     ImVec4 clearColor;
     bool refreshAll;
-    bool isModelOn;
 
     float deltaTime;
     float lastFrame;
