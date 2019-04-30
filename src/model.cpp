@@ -46,9 +46,9 @@ void Model::loadModel(std::string path)
                                                  aiProcess_ValidateDataStructure |
                                                  aiProcess_ImproveCacheLocality |
                                                  aiProcess_RemoveRedundantMaterials |
+                                                 aiProcess_GenSmoothNormals |
                                                  aiProcess_FlipUVs |
                                                  aiProcess_FindInvalidData |
-                                                 aiProcess_TransformUVCoords |
                                                  aiProcess_OptimizeMeshes
                                                  );
     if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -139,7 +139,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
             if(!skip)
             {
                 Texture texture;
-                texture.id = loadTextureFromFile(str.C_Str(), this->directory, true);
+                texture.id = loadTextureFromFile(str.C_Str(), this->directory, false);
                 texture.type = typeName;
                 texture.path = str;
                 textures.push_back(texture);
