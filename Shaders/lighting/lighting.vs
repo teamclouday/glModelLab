@@ -12,7 +12,6 @@ out VS_OUT
     vec2 Tex;
     vec3 Normal;
     vec3 FragPos;
-    mat4 model;
 } vs_out;
 
 void main()
@@ -21,5 +20,4 @@ void main()
     vs_out.Tex = texCoords;
     vs_out.Normal = mat3(transpose(inverse(model))) * normal;
     vs_out.FragPos = vec3(model * vec4(position, 1.0));
-    vs_out.model = model;
 }

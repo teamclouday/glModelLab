@@ -22,7 +22,6 @@ in VS_OUT
     vec2 Tex;
     vec3 Normal;
     vec3 FragPos;
-    mat4 model;
 } fs_in;
 
 uniform Material material;
@@ -44,7 +43,7 @@ void main()
     else
     {
         vec3 result = vec3(0.0);
-        vec3 viewDirection = normalize(vec3(fs_in.model * vec4(CameraPos, 1.0)) - fs_in.FragPos);
+        vec3 viewDirection = normalize(CameraPos - fs_in.FragPos);
         for(int i = 0; i < LightNum; i++)
             result += applyLight(light.lights[i], normalize(fs_in.Normal), fs_in.FragPos, viewDirection);
         color = vec4(result, 1.0);
@@ -55,13 +54,12 @@ void main()
 
 vec3 applyLight(Light myLight, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-    vec3 myLightPos = vec3(fs_in.model * vec4(myLight.position.xyz, 1.0));
     vec3 lightDir;
     float attenuation = 1.0;
     if(myLight.position.w == 0.0)
     {
         // directional light
-        lightDir = normalize(myLightPos);
+        lightDir = normalize(-myLight.position.xyz);
         attenuation = 1.0;
     }
     else
@@ -69,33 +67,18 @@ vec3 applyLight(Light myLight, vec3 normal, vec3 fragPos, vec3 viewDir)
         // point light
         if(myLight.coneAngle == 0.0)
         {
-            lightDir = normalize(myLightPos - fragPos);
-            float distanceToLight = length(myLightPos - fragPos);
+            lightDir = normalize(myLight.position.xyz - fragPos);
+            float distanceToLight = length(myLight.position.xyz - fragPos);
             attenuation = 1.0 / (1.0 +  myLight.attenuation * distanceToLight);
         }
 
         // spot light
         if(myLight.coneAngle > 0.0)
         {
-            // lightDir = normalize(CameraPos - fragPos);
-            // float distanceToLight = length(vec3(fs_in.model * vec4(CameraPos, 1.0)) - fragPos);
-            // attenuation = 1.0 / (1.0 +  myLight.attenuation * distanceToLight);
-            // float theta = dot(lightDir, normalize(-(vec3(fs_in.model * vec4(CameraPos, 1.0)) - fragPos)));
-            // float intensity;
-            // if(theta < myLight.coneAngle)
-            //     intensity = pow(theta, 20.0);
-            // else
-            //     intensity = 0;
-            // // float intensity = clamp((theta - myLight.coneAngle) / (5.0 - myLight.coneAngle), 0.0, 1.0);
-            // attenuation *= intensity;
-
             lightDir = normalize(vec3(CameraPos - fragPos));
             float distanceToLight = length(CameraPos - fragPos);
             attenuation = 1.0 / (1.0 +  myLight.attenuation * distanceToLight);
             float lightToSurfaceAngle = degrees(acos(dot(-lightDir, normalize(CameraDir))));
-            // float intensity;
-            // if(lightToSurfaceAngle > myLight.coneAngle)
-            //     attenuation = 0.0;
             float intensity = clamp((lightToSurfaceAngle - myLight.coneAngle) / (5.0 - myLight.coneAngle), 0.0, 1.0);
             attenuation *= intensity;
         }
