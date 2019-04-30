@@ -20,6 +20,7 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->displayConfigBack = false;
     this->displayConfigModel = false;
     this->displayConfigLight = false;
+    this->enableShadow = false;
     this->deltaTime = 0.0f;
     this->lastFrame = (float)SDL_GetTicks();
     this->xpos = (int)(io->DisplaySize.x / 2);
@@ -34,14 +35,16 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
 
     this->loadModelLists();
     this->loadShaderLists();
+
+    this->myShadow = new Shader("shadow/shadow.vs", "shadow/shadow.fs");
 }
 
 Renderer::~Renderer()
 {
     if(myModel != nullptr)
-        delete myModel;
+        delete this->myModel;
     if(myShader != nullptr)
-        delete myShader;
+        delete this->myShader;
     modelIdx.clear();
     modelIdx.shrink_to_fit();
     shaderIdx.clear();
@@ -52,6 +55,8 @@ Renderer::~Renderer()
     shader_list.shrink_to_fit();
     myLights.clear();
     myLights.shrink_to_fit();
+
+    delete this->myShadow;
 }
 
 void Renderer::startFrame()
@@ -135,6 +140,7 @@ void Renderer::setUpImGui()
         ImGui::MenuItem("Background", NULL, &this->displayConfigBack);
         ImGui::MenuItem("Model", NULL, &this->displayConfigModel);
         ImGui::MenuItem("SourceLight", NULL, &this->displayConfigLight);
+        ImGui::MenuItem("Shadow", NULL, &this->enableShadow);
         
         ImGui::EndMenu();
     }
@@ -311,6 +317,8 @@ void Renderer::loadShaderLists()
     d = opendir("./Shaders");
     while((dir = readdir(d)) != NULL)
     {
+        if(dir->d_name == std::string("shadow"))
+            continue;
         this->shader_list.push_back(dir->d_name);
     }
     closedir(d);

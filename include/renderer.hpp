@@ -34,11 +34,14 @@ private:
     bool displayConfigModel;
     bool displayConfigLight;
 
+    bool enableShadow;
+
     float deltaTime;
     float lastFrame;
 
     Model *myModel;
     Shader *myShader;
+    Shader *myShadow;
 
     std::vector<int> modelIdx;
     std::vector<int> shaderIdx;
