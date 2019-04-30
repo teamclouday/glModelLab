@@ -79,7 +79,7 @@ void Camera::ProcessMouseScroll(GLfloat yoffset)
 
 void Camera::reset()
 {
-    this->Position = glm::vec3(0.0f, 0.0f, 3.0f);
+    this->Position = glm::vec3(0.0f, 1.0f, 5.0f);
     this->WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     this->Yaw = YAW;
     this->Pitch = PITCH;
