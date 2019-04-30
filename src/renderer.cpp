@@ -103,6 +103,8 @@ void Renderer::glRenderAll()
     glm::mat4 model(1.0f);
     model = glm::scale(model, glm::vec3(this->zoomLevel));
     this->myShader->use();
+    for(unsigned i = 0; i < this->myLights.size(); i++)
+        glNamedBufferSubData(this->lightBuffer, i*sizeof(SourceLight), sizeof(SourceLight), myLights[i]);
     glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(this->myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
@@ -211,10 +213,11 @@ void Renderer::setUpImGui()
             {
                 SourceLight *newLight = new SourceLight;
                 newLight->position = glm::vec4(10.0f, 10.0f, 10.0f, 0.0f);
-                newLight->color = glm::vec3(1.0f);
+                newLight->color = glm::vec4(1.0f);
                 newLight->attenuation = 0.2f;
                 newLight->ambientCoeff = 0.5f;
                 newLight->coneAngle = 0.0f;
+                newLight->specCoeff = 32.0f;
                 this->myLights.push_back(newLight);
             }
         }
@@ -227,11 +230,9 @@ void Renderer::setUpImGui()
                 delete lastLight;
             }
         }
-        if(this->myShader != nullptr)
-            this->myShader->use();
         for(unsigned i = 0; i < this->myLights.size(); i++)
         {
-            glNamedBufferSubData(this->lightBuffer, i*(sizeof(SourceLight)), sizeof(SourceLight), myLights[i]);
+            ImGui::PushID(i);
             ImGui::Spacing();
             ImGui::Text("Light %u", i+1);
             ImGui::Spacing();
@@ -240,6 +241,8 @@ void Renderer::setUpImGui()
             ImGui::DragFloat("Light Attenuation", &(myLights[i]->attenuation), 0.001f, 0.0f, 1.0f);
             ImGui::DragFloat("Light Ambient Coefficient", &(myLights[i]->ambientCoeff), 0.001f, 0.0f, 1.0f);
             ImGui::DragFloat("Light Cone Angle", &(myLights[i]->coneAngle), 0.1f, 0.0f, 80.0f);
+            ImGui::DragFloat("Light Specular Coefficient", &(myLights[i]->specCoeff), 0.5f, 8.0f, 64.0f);
+            ImGui::PopID();
         }
     }
 

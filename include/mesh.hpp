@@ -28,10 +28,11 @@ struct Texture
 struct SourceLight
 {
     glm::vec4 position;
-    glm::vec3 color;
+    glm::vec4 color;
     float attenuation;
     float ambientCoeff;
     float coneAngle;
+    float specCoeff;
 };
 
 class Mesh

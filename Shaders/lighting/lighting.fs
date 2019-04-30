@@ -9,10 +9,11 @@ struct Material
 struct Light
 {
     vec4 position;
-    vec3 color;
+    vec4 color;
     float attenuation;
     float ambientCoeff;
     float coneAngle;
+    float specCoeff;
 };
 
 out vec4 color;
@@ -87,10 +88,10 @@ vec3 applyLight(Light myLight, vec3 normal, vec3 fragPos, vec3 viewDir)
     vec3 ambient = myLight.ambientCoeff * vec3(texture(material.texture_diffuse1, fs_in.Tex));
 
     float diffuseCoefficient = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = (0.8 * myLight.color) * diffuseCoefficient * vec3(texture(material.texture_diffuse1, fs_in.Tex));
+    vec3 diffuse = (0.8 * vec3(myLight.color)) * diffuseCoefficient * vec3(texture(material.texture_diffuse1, fs_in.Tex));
     
-    float specularCoefficient = pow(max(dot(viewDir, reflect(-lightDir, normal)), 0.0), 32.0);
-    vec3 specular = myLight.color * specularCoefficient * vec3(texture(material.texture_specular1, fs_in.Tex));
+    float specularCoefficient = pow(max(dot(viewDir, reflect(-lightDir, normal)), 0.0), myLight.specCoeff);
+    vec3 specular = vec3(myLight.color) * specularCoefficient * vec3(texture(material.texture_specular1, fs_in.Tex));
 
     return attenuation * (ambient + diffuse + specular);
 }
