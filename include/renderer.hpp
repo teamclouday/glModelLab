@@ -15,8 +15,10 @@
 #include <vector>
 #include <sstream>
 
+#include "basic.hpp"
 #include "model.hpp"
 #include "shader.hpp"
+#include "shadow.hpp"
 #include "camera.hpp"
 #include "myerr.hpp"
 
@@ -28,7 +30,6 @@ private:
 
     bool displayModels;
     bool displayShaders;
-    bool displayInfo;
 
     bool displayConfigBack;
     bool displayConfigModel;
@@ -41,7 +42,7 @@ private:
 
     Model *myModel;
     Shader *myShader;
-    Shader *myShadow;
+    ShadowMap *myShadow;
 
     std::vector<int> modelIdx;
     std::vector<int> shaderIdx;
@@ -55,6 +56,8 @@ private:
     void refresh();
     void setUpImGui();
     void glRenderAll();
+    void handleMouse();
+    void handleController();
 public:
     float zoomLevel;
     int xpos, ypos;
@@ -65,5 +68,7 @@ public:
 
     void startFrame();
     void render();
-    void handleMouse(bool isfocused);
+
+    bool displayInfo;
+    bool quit;
 };

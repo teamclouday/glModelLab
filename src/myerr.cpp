@@ -9,9 +9,10 @@ MessageCallback(GLenum source,
                 const GLchar* message,
                 const void* userParam)
 {
+    if(type == GL_DEBUG_TYPE_ERROR){
     fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-            type, severity, message);
+            type, severity, message);}
 }
 
 void _check_gl_error(const char *file, int line)

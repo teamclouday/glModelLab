@@ -4,6 +4,7 @@ extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
 extern ImGuiIO *io;
 extern Camera *camera;
+extern SDL_GameController *myController;
 
 std::string findModelName(std::string folderPath);
 
@@ -21,6 +22,7 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->displayConfigModel = false;
     this->displayConfigLight = false;
     this->enableShadow = false;
+    this->quit = false;
     this->deltaTime = 0.0f;
     this->lastFrame = (float)SDL_GetTicks();
     this->xpos = (int)(io->DisplaySize.x / 2);
@@ -36,7 +38,7 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->loadModelLists();
     this->loadShaderLists();
 
-    this->myShadow = new Shader("shadow/shadow.vs", "shadow/shadow.fs");
+    this->myShadow = new ShadowMap();
 }
 
 Renderer::~Renderer()
@@ -72,7 +74,11 @@ void Renderer::render()
     this->deltaTime = currentTime - this->lastFrame;
     this->lastFrame = currentTime;
 
-    this->handleMouse(this->isFocused);
+    if(this->isFocused)
+        this->handleMouse();
+
+    if(myController)
+        this->handleController();
 
     SDL_GL_MakeCurrent(myWindow, glContext);
     glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
@@ -131,7 +137,7 @@ void Renderer::setUpImGui()
         ImGui::MenuItem("Cubemaps", NULL);
         // TODO: add cubemap support
         if(ImGui::MenuItem("Quit", "ECS"))
-            exit(0);
+            this->quit = true;
         ImGui::EndMenu();
     }
 
@@ -154,7 +160,7 @@ void Renderer::setUpImGui()
             if(isFullScreen)
                 SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         }
-        ImGui::MenuItem("Info", NULL, &this->displayInfo);
+        ImGui::MenuItem("Info", "H", &this->displayInfo);
         ImGui::EndMenu();
     }
 
@@ -343,10 +349,8 @@ void Renderer::refresh()
     this->refreshAll = false;
 }
 
-void Renderer::handleMouse(bool isfocused)
+void Renderer::handleMouse()
 {
-    if(!isfocused)
-        return;
     // handle keyboard motion
     if(io->KeysDown[SDL_SCANCODE_W])
         camera->ProcessKeyboard(FORWARD, this->deltaTime);
@@ -365,6 +369,38 @@ void Renderer::handleMouse(bool isfocused)
     this->ypos = (int)(io->DisplaySize.y / 2);
     camera->ProcessMouseMovement(xoffset, yoffset);
     SDL_WarpMouseInWindow(myWindow, this->xpos, this->ypos);
+}
+
+void Renderer::handleController()
+{
+    if(SDL_GameControllerGetButton(myController, SDL_CONTROLLER_BUTTON_DPAD_UP))
+        this->zoomLevel += 0.001f;
+    if(SDL_GameControllerGetButton(myController, SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+        this->zoomLevel -= 0.001f;
+    if(this->zoomLevel > 1.0f)
+        this->zoomLevel = 1.0f;
+    if(this->zoomLevel < 0.0f)
+        this->zoomLevel = 0.0f;
+
+    Sint16 lx, ly, rx, ry;
+    lx = SDL_GameControllerGetAxis(myController, SDL_CONTROLLER_AXIS_LEFTX);
+    ly = SDL_GameControllerGetAxis(myController, SDL_CONTROLLER_AXIS_LEFTY);
+    rx = SDL_GameControllerGetAxis(myController, SDL_CONTROLLER_AXIS_RIGHTX);
+    ry = SDL_GameControllerGetAxis(myController, SDL_CONTROLLER_AXIS_RIGHTY);
+
+    if(lx > SDL_CONTROLLERAXIS_LEFT_DEADZONE)
+        camera->ProcessKeyboard(RIGHT, this->deltaTime);
+    if(lx < -SDL_CONTROLLERAXIS_LEFT_DEADZONE)
+        camera->ProcessKeyboard(LEFT, this->deltaTime);
+    if(ly > SDL_CONTROLLERAXIS_LEFT_DEADZONE)
+        camera->ProcessKeyboard(BACKWARD, this->deltaTime);
+    if(ly < -SDL_CONTROLLERAXIS_LEFT_DEADZONE)
+        camera->ProcessKeyboard(FORWARD, this->deltaTime);
+    if(rx < SDL_CONTROLLERAXIS_RIGHT_DEADZONE && rx > -SDL_CONTROLLERAXIS_RIGHT_DEADZONE)
+        rx = 0;
+    if(ry < SDL_CONTROLLERAXIS_RIGHT_DEADZONE && ry > -SDL_CONTROLLERAXIS_RIGHT_DEADZONE)
+        ry = 0;
+    camera->ProcessMouseMovement((float)(rx / 800.0f), (float)(ry / 800.0f));
 }
 
 std::string findModelName(std::string folderPath)

@@ -3,6 +3,7 @@
 // global variables
 SDL_Window *myWindow = nullptr;
 SDL_GLContext glContext = NULL;
+SDL_GameController *myController = nullptr;
 ImGuiIO* io = nullptr;
 Renderer *myRenderer = nullptr;
 Camera *camera = nullptr;
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
     Uint32 now = SDL_GetTicks();
 
     bool quit = false;
-    while(!quit)
+    while(!quit && !myRenderer->quit)
     {
         quit = pollEvents();
         myRenderer->startFrame();

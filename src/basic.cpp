@@ -3,13 +3,14 @@
 
 extern SDL_Window *myWindow;
 extern SDL_GLContext glContext;
+extern SDL_GameController *myController;
 extern ImGuiIO* io;
 extern Renderer *myRenderer;
 extern Camera *camera;
 
 void initAll(const std::string title, int width, int height)
 {
-    if(SDL_Init(SDL_INIT_VIDEO) < 0)
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
     {
         printf("Failed to init SDL2\nSDL Error: %s\n", SDL_GetError());
         exit(ERROR_SDL_INIT);
@@ -82,86 +83,114 @@ bool pollEvents()
     while(SDL_PollEvent(&e))
     {
         ImGui_ImplSDL2_ProcessEvent(&e);
-        if(e.type == SDL_QUIT)
-            return true;
-        else if(e.type == SDL_KEYDOWN)
+        switch(e.type)
         {
-            io->KeysDown[e.key.keysym.scancode] = true;
-            if(!myRenderer->isFocused)
+            case SDL_QUIT:
+                return true;
+            case SDL_KEYDOWN:
             {
-                switch(e.key.keysym.sym)
+                io->KeysDown[e.key.keysym.scancode] = true;
+                if(!myRenderer->isFocused)
                 {
-                    case SDLK_ESCAPE:
-                        return true;
-                    case SDLK_F11:
+                    switch(e.key.keysym.sym)
                     {
-                        bool isFullScreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
-                        SDL_SetWindowFullscreen(myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-                        if(isFullScreen)
-                            SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-                        break;
+                        case SDLK_ESCAPE:
+                            return true;
+                        case SDLK_F11:
+                        {
+                            bool isFullScreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+                            SDL_SetWindowFullscreen(myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+                            if(isFullScreen)
+                                SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                switch(e.key.keysym.sym)
+                else
                 {
-                    case SDLK_ESCAPE:
+                    switch(e.key.keysym.sym)
                     {
-                        myRenderer->isFocused = false;
-                        SDL_ShowCursor(SDL_TRUE);
-                        SDL_CaptureMouse(SDL_FALSE);
-                        break;
-                    }
-                    case SDLK_r:
-                    {
-                        camera->reset();
-                        break;
-                    }
-                    case SDLK_F11:
-                    {
-                        bool isFullScreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
-                        SDL_SetWindowFullscreen(myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-                        if(isFullScreen)
-                            SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-                        break;
+                        case SDLK_ESCAPE:
+                        {
+                            myRenderer->isFocused = false;
+                            SDL_ShowCursor(SDL_TRUE);
+                            SDL_CaptureMouse(SDL_FALSE);
+                            break;
+                        }
+                        case SDLK_r:
+                        {
+                            camera->reset();
+                            break;
+                        }
+                        case SDLK_F11:
+                        {
+                            bool isFullScreen = SDL_GetWindowFlags(myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+                            SDL_SetWindowFullscreen(myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+                            if(isFullScreen)
+                                SDL_SetWindowPosition(myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                            break;
+                        }
+                        case SDLK_h:
+                        {
+                            myRenderer->displayInfo = myRenderer->displayInfo ? false : true;
+                            break;
+                        }
                     }
                 }
-            }   
-        }
-        else if(e.type == SDL_KEYUP)
-            io->KeysDown[e.key.keysym.scancode] = false;
-        else if(e.type == SDL_MOUSEBUTTONDOWN)
-        {
-            if(!ImGui::IsAnyWindowHovered())
-            {
-                myRenderer->isFocused = true;
-                SDL_ShowCursor(SDL_FALSE);
-                myRenderer->xpos = (int)(io->DisplaySize.x / 2);
-                myRenderer->ypos = (int)(io->DisplaySize.y / 2);
-                SDL_WarpMouseInWindow(myWindow, myRenderer->xpos, myRenderer->ypos);
-                SDL_CaptureMouse(SDL_TRUE);
+                break;
             }
-        }
-        else if(e.type == SDL_WINDOWEVENT)
-        {
-            switch(e.window.event)
+            case SDL_KEYUP:
+                io->KeysDown[e.key.keysym.scancode] = false;
+                break;
+            case SDL_MOUSEBUTTONDOWN:
             {
-                case SDL_WINDOWEVENT_SIZE_CHANGED:
-                    glViewport(0, 0, e.window.data1, e.window.data2);
+                if(!ImGui::IsAnyWindowHovered())
+                {
+                    myRenderer->isFocused = true;
+                    SDL_ShowCursor(SDL_FALSE);
+                    myRenderer->xpos = (int)(io->DisplaySize.x / 2);
+                    myRenderer->ypos = (int)(io->DisplaySize.y / 2);
+                    SDL_WarpMouseInWindow(myWindow, myRenderer->xpos, myRenderer->ypos);
+                    SDL_CaptureMouse(SDL_TRUE);
+                }
+                break;
             }
-        }
-        else if(e.type == SDL_MOUSEWHEEL)
-        {
-            if(e.wheel.y > 0)
-                myRenderer->zoomLevel += 0.005f;
-            else
-                myRenderer->zoomLevel -= 0.005f;
-            if(myRenderer->zoomLevel > 1.0f)
-                myRenderer->zoomLevel = 1.0f;
-            if(myRenderer->zoomLevel < 0.0f)
-                myRenderer->zoomLevel = 0.0f;
+            case SDL_WINDOWEVENT:
+            {
+                switch(e.window.event)
+                {
+                    case SDL_WINDOWEVENT_SIZE_CHANGED:
+                        glViewport(0, 0, e.window.data1, e.window.data2);
+                        break;
+                }
+                break;
+            }
+            case SDL_MOUSEWHEEL:
+            {
+                if(e.wheel.y > 0)
+                    myRenderer->zoomLevel += 0.005f;
+                else
+                    myRenderer->zoomLevel -= 0.005f;
+                if(myRenderer->zoomLevel > 1.0f)
+                    myRenderer->zoomLevel = 1.0f;
+                if(myRenderer->zoomLevel < 0.0f)
+                    myRenderer->zoomLevel = 0.0f;
+                break;
+            }
+            case SDL_CONTROLLERDEVICEADDED:
+                addController(e.cdevice.which);
+                break;
+            case SDL_CONTROLLERDEVICEREMOVED:
+                removeController(e.cdevice.which);
+                break;
+            case SDL_CONTROLLERBUTTONDOWN:
+            {
+                if(e.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE)
+                    myRenderer->displayInfo = myRenderer->displayInfo ? false : true;
+                if(e.cbutton.button == SDL_CONTROLLER_BUTTON_BACK)
+                    myRenderer->quit = true;
+                break;
+            }
         }
     }
     return false;
@@ -176,7 +205,33 @@ void destroyAll()
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
+    if(myController)
+        SDL_GameControllerClose(myController);
+
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(myWindow);
     SDL_Quit();
+}
+
+void addController(int id)
+{
+    if(myController)
+        return;
+    myController = SDL_GameControllerOpen(id);
+    if(!myController)
+    {
+        printf("Failed to connect controller\nSDL Error: %s\n", SDL_GetError());
+        exit(ERROR_CONTROLLER);
+    }
+    else
+        printf("Controller: %s connected\n", SDL_GameControllerName(myController));
+}
+
+void removeController(int id)
+{
+    if(!myController)
+        return;
+    SDL_GameControllerClose(myController);
+    myController = nullptr;
+    printf("Controller removed\n");
 }
