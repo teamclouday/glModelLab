@@ -60,7 +60,7 @@ vec3 applyLight(Light myLight, vec3 normal, vec3 fragPos, vec3 viewDir)
     if(myLight.position.w == 0.0)
     {
         // directional light
-        lightDir = normalize(-myLight.position.xyz);
+        lightDir = normalize(myLight.position.xyz);
         attenuation = 1.0;
     }
     else
