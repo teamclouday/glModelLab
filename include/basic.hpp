@@ -31,8 +31,6 @@
 
 #define FPS 60
 
-// override sdl2 wrong controller map
-#define SDL_CONTROLLER_BUTTON_GUIDE 6
 // self-defined deadzone for game controller
 #define SDL_CONTROLLERAXIS_LEFT_DEADZONE  7849
 #define SDL_CONTROLLERAXIS_RIGHT_DEADZONE 8689

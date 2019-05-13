@@ -185,10 +185,12 @@ bool pollEvents()
                 break;
             case SDL_CONTROLLERBUTTONDOWN:
             {
-                if(e.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE)
+                if(e.cbutton.button == SDL_CONTROLLER_BUTTON_START)
                     myRenderer->displayInfo = myRenderer->displayInfo ? false : true;
                 if(e.cbutton.button == SDL_CONTROLLER_BUTTON_BACK)
                     myRenderer->quit = true;
+                if(e.cbutton.button == SDL_CONTROLLER_BUTTON_A)
+                    camera->reset();
                 break;
             }
         }
