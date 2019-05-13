@@ -6,9 +6,10 @@
 #include <iostream>
 
 #define ERROR_SDL_INIT          1
-#define ERROR_SDL_GL_CONTEXT    2
-#define ERROR_GLEW_INIT         3
-#define ERROR_CONTROLLER        4
+#define ERROR_SDL_WINDOW        2
+#define ERROR_SDL_GL_CONTEXT    3
+#define ERROR_GLEW_INIT         4
+#define ERROR_CONTROLLER        5
 
 void GLAPIENTRY
 MessageCallback(GLenum source,
