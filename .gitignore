@@ -1,4 +1,4 @@
-*.exe
+mdlab*
 *.dll
 .vscode
 build
