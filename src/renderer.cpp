@@ -269,14 +269,12 @@ void Renderer::setUpImGui()
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Models List");
     ImGui::Spacing();
     
-    if(!this->model_list.size())
+    if(this->model_list.size() <= 2)
         ImGui::Text("No models found under Models folder!");
     else
     {
-        for(unsigned i = 0; i < this->model_list.size(); i++)
-        {
+        for(unsigned i = 2; i < this->model_list.size(); i++)
             ImGui::RadioButton(model_list[i].c_str(), &this->modelIdx[1], i);
-        }
     }
 
     ImGui::End();
@@ -290,14 +288,12 @@ void Renderer::setUpImGui()
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Shaders List");
     ImGui::Spacing();
 
-    if(!this->shader_list.size())
+    if(this->shader_list.size() <= 2)
         ImGui::Text("No shaders found under Shaders folder!");
     else
     {
-        for(unsigned i = 0; i < this->shader_list.size(); i++)
-        {
+        for(unsigned i = 2; i < this->shader_list.size(); i++)
             ImGui::RadioButton(shader_list[i].c_str(), &this->shaderIdx[1], i);
-        }
     }
 
     ImGui::End();
@@ -314,8 +310,9 @@ void Renderer::loadModelLists()
     while((dir = readdir(d)) != NULL)
     {
         if(dir->d_name[0] == '.')
-            continue;
-        this->model_list.push_back(dir->d_name);
+            this->model_list.insert(this->model_list.begin(), dir->d_name);
+        else
+            this->model_list.push_back(dir->d_name);
     }
     closedir(d);
 }
@@ -330,8 +327,9 @@ void Renderer::loadShaderLists()
     while((dir = readdir(d)) != NULL)
     {
         if(dir->d_name[0] == '.')
-            continue;
-        this->shader_list.push_back(dir->d_name);
+            this->shader_list.insert(this->shader_list.begin(), dir->d_name);
+        else
+            this->shader_list.push_back(dir->d_name);
     }
     closedir(d);
 }
