@@ -36,6 +36,7 @@ private:
     bool displayConfigLight;
 
     bool enableShadow;
+    bool lineMode;
 
     float deltaTime;
     float lastFrame;

@@ -22,6 +22,7 @@ Renderer::Renderer(ImVec4 clear_color) : modelIdx(2, 0), shaderIdx(2, 0)
     this->displayConfigModel = false;
     this->displayConfigLight = false;
     this->enableShadow = false;
+    this->lineMode = false;
     this->quit = false;
     this->deltaTime = 0.0f;
     this->lastFrame = (float)SDL_GetTicks();
@@ -109,6 +110,10 @@ void Renderer::render()
 
 void Renderer::glRenderAll()
 {
+    if(this->lineMode)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glm::mat4 view = camera->GetViewMatrix();
     glm::mat4 projection = glm::perspective(45.0f, (io->DisplaySize.x/io->DisplaySize.y), 0.1f, 1000.0f);
     glm::mat4 model(1.0f);
@@ -213,6 +218,7 @@ void Renderer::setUpImGui()
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model Configs");
         ImGui::Spacing();
         ImGui::DragFloat("Model Zoom Level", &this->zoomLevel, 0.001f, 0.0f, 1.5f);
+        ImGui::Checkbox("Trigger Line Mode", &this->lineMode);
     }
     if(this->displayConfigLight)
     {
