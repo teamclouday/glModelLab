@@ -172,6 +172,8 @@ bool pollEvents()
             }
             case SDL_MOUSEWHEEL:
             {
+                if(!myRenderer->isFocused)
+                    break;
                 if(e.wheel.y > 0)
                     myRenderer->zoomLevel += 0.005f;
                 else

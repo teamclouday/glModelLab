@@ -4,4 +4,4 @@ mdlab*
 build
 externel/*
 !externel/externel.zip
-Models/*
+models/*

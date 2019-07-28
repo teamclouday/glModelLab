@@ -276,7 +276,7 @@ void Renderer::setUpImGui()
     ImGui::Spacing();
     
     if(this->model_list.size() <= 2)
-        ImGui::Text("No models found under Models folder!");
+        ImGui::Text("No models found under \"models\" folder!");
     else
     {
         for(unsigned i = 2; i < this->model_list.size(); i++)
@@ -295,7 +295,7 @@ void Renderer::setUpImGui()
     ImGui::Spacing();
 
     if(this->shader_list.size() <= 2)
-        ImGui::Text("No shaders found under Shaders folder!");
+        ImGui::Text("No shaders found under \"shaders\" folder!");
     else
     {
         for(unsigned i = 2; i < this->shader_list.size(); i++)
@@ -310,7 +310,7 @@ void Renderer::loadModelLists()
 {
     DIR *d;
     struct dirent *dir;
-    d = opendir("./Models");
+    d = opendir("./models");
     if(!d)
         return;
     while((dir = readdir(d)) != NULL)
@@ -327,7 +327,7 @@ void Renderer::loadShaderLists()
 {
     DIR *d;
     struct dirent *dir;
-    d = opendir("./Shaders");
+    d = opendir("./shaders");
     if(!d)
         return;
     while((dir = readdir(d)) != NULL)
@@ -353,9 +353,9 @@ void Renderer::refresh()
     std::string shaderPath = this->shader_list[this->shaderIdx[1]] + "/" + this->shader_list[this->shaderIdx[1]];
     this->myShader = new Shader(shaderPath + ".vs", shaderPath + ".fs");
 
-    std::string modelName = findModelName("./Models/"  + this->model_list[this->modelIdx[1]]);
+    std::string modelName = findModelName("./models/"  + this->model_list[this->modelIdx[1]]);
 
-    this->myModel = new Model("./Models/"  + this->model_list[this->modelIdx[1]] + "/" + modelName);
+    this->myModel = new Model("./models/"  + this->model_list[this->modelIdx[1]] + "/" + modelName);
     this->refreshAll = false;
 }
 

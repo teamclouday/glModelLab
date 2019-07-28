@@ -4,7 +4,7 @@ Shader::Shader(const std::string vertname, const std::string fragname)
 {
     // load context of vertex shader file
     std::ifstream file;
-    file.open(("./Shaders/" + vertname).c_str());
+    file.open(("./shaders/" + vertname).c_str());
     if(!file.is_open())
     {
         printf("Cannot load shader file source: %s\n", vertname.c_str());
@@ -20,7 +20,7 @@ Shader::Shader(const std::string vertname, const std::string fragname)
     sstr.str("");
 
     // load context of fragment shader file
-    file.open(("./Shaders/" + fragname).c_str());
+    file.open(("./shaders/" + fragname).c_str());
     if(!file.is_open())
     {
         printf("Cannot load shader file source: %s\n", fragname.c_str());
