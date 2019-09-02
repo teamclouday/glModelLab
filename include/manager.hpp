@@ -9,10 +9,13 @@
 
 #include <iostream>
 
+#include "camera.hpp"
+
 enum GlobalVariables
 {
     GLOB_WINDOW,
     GLOB_CONTEXT,
+    GLOB_CAMERA,
 };
 
 class GlobalManager
@@ -20,6 +23,7 @@ class GlobalManager
 public:
     SDL_Window *myWindow;
     SDL_GLContext myContext;
+    Camera *myCamera;
 
     GlobalManager();
     ~GlobalManager();

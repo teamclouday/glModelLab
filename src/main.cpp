@@ -84,11 +84,13 @@ bool initEnv()
     ImGui_ImplOpenGL3_Init(glsl_ver);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     ImGui::GetIO().IniFilename = nullptr;
-
+    // init camera
+    Camera *myCamera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
     // create manager
     manager = new GlobalManager();
     manager->store(GLOB_WINDOW, (void*)myWindow);
     manager->store(GLOB_CONTEXT, (void*)myContext);
+    manager->store(GLOB_CAMERA, (void*)myCamera);
 
     return true;
 }
