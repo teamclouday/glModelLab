@@ -1,48 +1,51 @@
-cmake_minimum_required(VERSION 3.12.0)
-project(ModelLoader VERSION 1.0.0 LANGUAGES CXX)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10.0)
+PROJECT(ModelLab VERSION 1.0.0 LANGUAGES CXX)
 SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -O2")
 
-if(WIN32)
+IF(WIN32)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mconsole")
-endif(WIN32)
+ENDIF(WIN32)
 
-add_compile_definitions(GLEW_STATIC)
+ADD_COMPILE_DEFINITIONS(GLEW_STATIC)
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 SET(MY_SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
-
-# prepare the source files
-if(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/externel.zip)
-execute_process(
+# prepare the src files
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/externel.zip)
+EXECUTE_PROCESS(
     COMMAND git pull origin master
 )
-endif()
-if(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/glew)
-execute_process (
+ENDIF()
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/glew)
+EXECUTE_PROCESS(
     COMMAND unzip ${CMAKE_SOURCE_DIR}/externel/externel.zip -d ${CMAKE_SOURCE_DIR}/externel
 )
-endif()
+ENDIF()
 
-if(WIN32)
-if(NOT EXISTS ${CMAKE_SOURCE_DIR}/SDL2.dll)
-execute_process (
+IF(WIN32)
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/SDL2.dll)
+EXECUTE_PROCESS(
     COMMAND cp ${CMAKE_SOURCE_DIR}/externel/SDL2/bin/SDL2.dll ${CMAKE_SOURCE_DIR}/SDL2.dll
 )
-endif()
+ENDIF()
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/libassimp.dll)
-execute_process (
+EXECUTE_PROCESS(
     COMMAND cp ${CMAKE_SOURCE_DIR}/externel/assimp/bin/libassimp.dll ${CMAKE_SOURCE_DIR}/libassimp.dll
 )
-endif()
-endif(WIN32)
+ENDIF()
+ENDIF(WIN32)
 
 FILE(GLOB_RECURSE SRC_FILES "${MY_SRC_DIR}/*.cpp")
 FILE(GLOB_RECURSE SRC_IMGUI "${CMAKE_SOURCE_DIR}/externel/imgui/src/*.cpp")
 
-if(WIN32)
-include_directories(
+ADD_LIBRARY(IMGUI_LIBRARIES
+    ${SRC_IMGUI} 
+)
+
+IF(WIN32)
+INCLUDE_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/include"
     "${CMAKE_SOURCE_DIR}/externel/glew/include"
     "${CMAKE_SOURCE_DIR}/externel/glm/include"
@@ -52,74 +55,75 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/externel/SOIL/include"
 )
 
-link_directories(
+LINK_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/externel/glew/lib"
     "${CMAKE_SOURCE_DIR}/externel/SDL2/lib"
     "${CMAKE_SOURCE_DIR}/externel/assimp/lib"
     "${CMAKE_SOURCE_DIR}/externel/SOIL/lib"
 )
-endif(WIN32)
+ENDIF(WIN32)
 
-find_package(OpenGL REQUIRED)
+FIND_PACKAGE(OpenGL REQUIRED)
 
-if(UNIX)
-include_directories(
+IF(UNIX)
+INCLUDE_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/include"
     "${CMAKE_SOURCE_DIR}/externel/imgui/include"
 )
 # setup glew
-find_package(GLEW REQUIRED)
-if(GLEW_FOUND)
-    include_directories(${GLEW_INCLUDE_DIRS})
-else()
-    message("glew is not found on this machine")
-endif()
+FIND_PACKAGE(GLEW REQUIRED)
+IF(GLEW_FOUND)
+    INCLUDE_DIRECTORIES(${GLEW_INCLUDE_DIRS})
+ELSE()
+    MESSAGE(FATAL_ERROR "GLEW is not found on this machine")
+ENDIF()
 # setup SDL2
 FIND_PATH(SDL2_INCLUDE_DIRS SDL.h PATH_SUFFIXES SDL2)
 FIND_LIBRARY(SDL2_LIBRARIES SDL2)
-if(SDL2_INCLUDE_DIR_NOTFOUND)
-    message("SDL2 is not found on this machine")
-else()
-    include_directories(${SDL2_INCLUDE_DIRS})
-endif()
+IF(SDL2_INCLUDE_DIR_NOTFOUND)
+    MESSAGE(FATAL_ERROR "SDL2 is not found on this machine")
+ELSE()
+    INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
+ENDIF()
 # setup assimp
-find_package(ASSIMP REQUIRED)
-if(ASSIMP_FOUND)
-    include_directories(${ASSIMP_INCLUDE_DIRS})
-else()
-    message("Assimp is not found on this machine")
-endif()
+FIND_PACKAGE(ASSIMP REQUIRED)
+IF(ASSIMP_FOUND)
+    INCLUDE_DIRECTORIES(${ASSIMP_INCLUDE_DIRS})
+ELSE()
+    MESSAGE(FATAL_ERROR "Assimp is not found on this machine")
+ENDIF()
 # setup soil
 FIND_PATH(SOIL_INCLUDE_DIRS SOIL.h PATH_SUFFIXES SOIL)
 FIND_LIBRARY(SOIL_LIBRARIES SOIL)
-if(SOIL_INCLUDE_DIRS_NOTFOUND)
-    message("SOIL is not found on this machine")
-else()
-    include_directories(${SOIL_INCLUDE_DIRS})
-endif()
-endif(UNIX)
+IF(SOIL_INCLUDE_DIRS_NOTFOUND)
+    MESSAGE(FATAL_ERROR "SOIL is not found on this machine")
+ELSE()
+    INCLUDE_DIRECTORIES(${SOIL_INCLUDE_DIRS})
+ENDIF()
+ENDIF(UNIX)
 
-add_executable(mdlab ${SRC_FILES} ${SRC_IMGUI})
+ADD_EXECUTABLE(run ${SRC_FILES})
 
-if(WIN32)
-target_link_libraries(mdlab
+IF(WIN32)
+TARGET_LINK_LIBRARIES(run
     mingw32
     SDL2main
-    message(${SDL2_INCLUDE_DIRS})
     SDL2
     glew32s
     assimp
     SOIL
+    IMGUI_LIBRARIES
     ${OPENGL_LIBRARIES}
 )
-endif(WIN32)
+ENDIF(WIN32)
 
-if(UNIX)
-target_link_libraries(mdlab
+IF(UNIX)
+TARGET_LINK_LIBRARIES(run
     ${GLEW_LIBRARIES}
     ${SDL2_LIBRARIES}
     ${ASSIMP_LIBRARIES}
     ${SOIL_LIBRARIES}
+    IMGUI_LIBRARIES
     ${OPENGL_LIBRARIES}
 )
-endif(UNIX)
+ENDIF(UNIX)
