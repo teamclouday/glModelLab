@@ -12,6 +12,7 @@
 #include <iostream>
 
 #include "manager.hpp"
+#include "shader.hpp"
 
 #define WINDOW_TITLE            "Model Lab"
 #define WINDOW_DEFAULT_WIDTH    800
