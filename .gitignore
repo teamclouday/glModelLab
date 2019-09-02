@@ -1,7 +1,7 @@
 run*
 *.dll
 .vscode
-build
+build/*
 externel/*
 !externel/externel.zip
 models/*
