@@ -67,5 +67,3 @@ private:
     void ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch = true);
     void updateCameraVectors();
 };
-
-#include "manager.hpp"

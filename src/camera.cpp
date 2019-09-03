@@ -1,4 +1,5 @@
 #include "camera.hpp"
+#include "manager.hpp"
 
 extern GlobalManager *manager;
 

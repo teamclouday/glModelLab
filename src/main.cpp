@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     {
         quit = pollEvents();
         fpsControl(&tNow, &tPrev);
-        
+        manager->myRenderer->renderScene();
     }
 
     quitAll();
@@ -86,11 +86,14 @@ bool initEnv()
     ImGui::GetIO().IniFilename = nullptr;
     // init camera
     Camera *myCamera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+    // init renderer
+    Renderer *myRenderer = new Renderer();
     // create manager
     manager = new GlobalManager();
     manager->store(GLOB_WINDOW, (void*)myWindow);
     manager->store(GLOB_CONTEXT, (void*)myContext);
     manager->store(GLOB_CAMERA, (void*)myCamera);
+    manager->store(GLOB_RENDERER, (void*)myRenderer);
 
     return true;
 }

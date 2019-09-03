@@ -13,6 +13,8 @@ GlobalManager::~GlobalManager()
         SDL_GL_DeleteContext(this->myContext);
     if(!this->myCamera)
         delete this->myCamera;
+    if(!this->myRenderer)
+        delete this->myRenderer;
 }
 
 // return true if previous value is overrided
@@ -51,6 +53,16 @@ bool GlobalManager::store(GlobalVariables var, void* pointer)
             this->myCamera = (Camera*)pointer;
             break;
         }
+        case GLOB_RENDERER:
+        {
+            if(this->myRenderer)
+            {
+                overrided = true;
+                this->free(var);
+            }
+            this->myRenderer = (Renderer*)pointer;
+            break;
+        }
     }
     return overrided;
 }
@@ -79,6 +91,13 @@ void GlobalManager::free(GlobalVariables var)
             if(!this->myCamera)
                 delete this->myCamera;
             this->myCamera = nullptr;
+            break;
+        }
+        case GLOB_RENDERER:
+        {
+            if(!this->myRenderer)
+                delete this->myRenderer;
+            this->myRenderer = nullptr;
             break;
         }
     }

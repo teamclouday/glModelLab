@@ -15,6 +15,7 @@
 #include "shader.hpp"
 #include "model.hpp"
 #include "camera.hpp"
+#include "renderer.hpp"
 
 #define WINDOW_TITLE            "Model Lab"
 #define WINDOW_DEFAULT_WIDTH    800
