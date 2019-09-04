@@ -23,6 +23,8 @@ struct RENDER_CONFIG
     bool line_mode = false;
     int window_w = 100;
     int window_h = 100;
+    int modelID = 0;
+    int shaderID = 0;
 };
 
 struct MENU_CONFIG

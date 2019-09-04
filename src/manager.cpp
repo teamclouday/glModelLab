@@ -2,7 +2,7 @@
 
 GlobalManager::GlobalManager()
 {
-    // do nothing here
+    this->update();
 }
 
 GlobalManager::~GlobalManager()
@@ -101,4 +101,50 @@ void GlobalManager::free(GlobalVariables var)
             break;
         }
     }
+}
+
+void GlobalManager::update()
+{
+    this->models.clear();
+    this->models.shrink_to_fit();
+    this->shaders.clear();
+    this->shaders.shrink_to_fit();
+    this->load_models();
+    this->load_shaders();
+}
+
+void GlobalManager::load_models()
+{
+    DIR *d;
+    struct dirent *dir;
+    d = opendir("./models");
+    if(!d)
+    {
+        std::cout << "\"models\" folder not found" << std::endl;
+        exit(1);
+    }
+    while((dir = readdir(d)) != NULL)
+    {
+        if(dir->d_name[0] != '.')
+            this->models.push_back(dir->d_name);
+    }
+    closedir(d);
+}
+
+void GlobalManager::load_shaders()
+{
+    DIR *d;
+    struct dirent *dir;
+    d = opendir("./shaders");
+    if(!d)
+    {
+        std::cout << "\"shaders\" folder not found" << std::endl;
+        exit(1);
+    }
+    while((dir = readdir(d)) != NULL)
+    {
+        if(dir->d_name[0] != '.')
+            this->shaders.push_back(dir->d_name);
+    }
+    closedir(d);
 }

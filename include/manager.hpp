@@ -8,6 +8,9 @@
 #include <SDL2/SDL.h>
 
 #include <iostream>
+#include <string>
+#include <vector>
+#include <dirent.h>
 
 #include "camera.hpp"
 #include "renderer.hpp"
@@ -28,9 +31,18 @@ public:
     Camera *myCamera;
     Renderer *myRenderer;
 
+    std::vector<std::string> models;
+    std::vector<std::string> shaders;
+
     GlobalManager();
     ~GlobalManager();
 
     bool store(GlobalVariables var, void* pointer);
     void free(GlobalVariables var);
+
+    void update();
+
+private:
+    void load_models();
+    void load_shaders();
 };

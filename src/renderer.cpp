@@ -78,6 +78,48 @@ void Renderer::renderMenu()
     ImGui::PopStyleColor();
 
     // render actual windows
+    if(pMenu->displayModels)
+    {
+        ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(0.9f*pRender->window_w, 0.85f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(pRender->window_alpha);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+        ImGui::Begin("Models", &pMenu->displayModels);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
+        for(unsigned i = 0; i < manager->models.size(); i++)
+        {
+            ImGui::PushID(i);
+            ImGui::RadioButton(manager->models[i].c_str(), &pRender->modelID, i);
+            ImGui::PopID();
+        }
+        if(!manager->models.size())
+            ImGui::Text("Where're the models under the \"models\" folder?");
+        ImGui::PopFont();
+        ImGui::End();
+        ImGui::PopFont();
+    }
+
+    if(pMenu->displayShaders)
+    {
+        ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(0.9f*pRender->window_w, 0.85f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(pRender->window_alpha);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+        ImGui::Begin("Shaders", &pMenu->displayShaders);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
+        for(unsigned i = 0; i < manager->shaders.size(); i++)
+        {
+            ImGui::PushID(i);
+            ImGui::RadioButton(manager->shaders[i].c_str(), &pRender->shaderID, i);
+            ImGui::PopID();
+        }
+        if(!manager->shaders.size())
+            ImGui::Text("Where're the shaders under the \"shaders\" folder?");
+        ImGui::PopFont();
+        ImGui::End();
+        ImGui::PopFont();
+    }
+
     if(pMenu->displayColors)
     {
         ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
