@@ -31,8 +31,10 @@ void Renderer::renderMenu()
         if(ImGui::BeginMenu("Materials"))
         {
             ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[3]);
-            ImGui::MenuItem("Models", NULL, &pMenu->displayModels);
-            ImGui::MenuItem("Shaders", NULL, &pMenu->displayShaders);
+            if(ImGui::MenuItem("Models", NULL, &pMenu->displayModels))
+                manager->update();
+            if(ImGui::MenuItem("Shaders", NULL, &pMenu->displayShaders))
+                manager->update();
             ImGui::PopFont();
             ImGui::EndMenu();
         }
