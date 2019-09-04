@@ -95,6 +95,14 @@ bool initEnv()
     manager->store(GLOB_CAMERA, (void*)myCamera);
     manager->store(GLOB_RENDERER, (void*)myRenderer);
 
+    // setup fonts for ImGui
+    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Regular.ttf", 22.0f);    // menu and window titles
+    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Italic.ttf", 22.0f);     // menu and window titles
+    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Bold.ttf", 22.0f);       // menu and window titles
+    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Regular.ttf", 18.0f);    // window contents
+    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Italic.ttf", 18.0f);     // window contents
+    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Bold.ttf", 18.0f);       // window contents
+
     return true;
 }
 
@@ -132,9 +140,8 @@ bool pollEvents()
                     case SDLK_F11:
                     {
                         bool isFullScreen = SDL_GetWindowFlags(manager->myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+                        SDL_SetWindowPosition(manager->myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                         SDL_SetWindowFullscreen(manager->myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-                        if(isFullScreen)
-                            SDL_SetWindowPosition(manager->myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                         break;
                     }
                 }
