@@ -96,12 +96,12 @@ bool initEnv()
     manager->store(GLOB_RENDERER, (void*)myRenderer);
 
     // setup fonts for ImGui
-    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Regular.ttf", 22.0f);    // menu and window titles
-    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Italic.ttf", 22.0f);     // menu and window titles
-    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Bold.ttf", 22.0f);       // menu and window titles
-    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Regular.ttf", 18.0f);    // window contents
-    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Italic.ttf", 18.0f);     // window contents
-    ImGui::GetIO().Fonts->AddFontFromFileTTF("./externel/roboto/Roboto-Bold.ttf", 18.0f);       // window contents
+    ImGui::GetIO().Fonts->AddFontFromFileTTF((std::string(MY_ROOT_DIR) + "/external/roboto/Roboto-Regular.ttf").c_str(), 22.0f);    // menu and window titles
+    ImGui::GetIO().Fonts->AddFontFromFileTTF((std::string(MY_ROOT_DIR) + "/external/roboto/Roboto-Italic.ttf").c_str(), 22.0f);     // menu and window titles
+    ImGui::GetIO().Fonts->AddFontFromFileTTF((std::string(MY_ROOT_DIR) + "/external/roboto/Roboto-Bold.ttf").c_str(), 22.0f);       // menu and window titles
+    ImGui::GetIO().Fonts->AddFontFromFileTTF((std::string(MY_ROOT_DIR) + "/external/roboto/Roboto-Regular.ttf").c_str(), 18.0f);    // window contents
+    ImGui::GetIO().Fonts->AddFontFromFileTTF((std::string(MY_ROOT_DIR) + "/external/roboto/Roboto-Italic.ttf").c_str(), 18.0f);     // window contents
+    ImGui::GetIO().Fonts->AddFontFromFileTTF((std::string(MY_ROOT_DIR) + "/external/roboto/Roboto-Bold.ttf").c_str(), 18.0f);       // window contents
 
     return true;
 }
@@ -140,8 +140,14 @@ bool pollEvents()
                     case SDLK_F11:
                     {
                         bool isFullScreen = SDL_GetWindowFlags(manager->myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+#ifdef __unix__
                         SDL_SetWindowPosition(manager->myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+#endif
                         SDL_SetWindowFullscreen(manager->myWindow, isFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+#ifdef _WIN32
+                        if(isFullScreen)
+                            SDL_SetWindowPosition(manager->myWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+#endif
                         break;
                     }
                 }

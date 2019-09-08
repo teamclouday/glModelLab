@@ -4,41 +4,72 @@ SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -O2")
 
 IF(WIN32)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mconsole")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mconsole")
+ADD_DEFINITIONS(-DMY_ROOT_DIR="${CMAKE_SOURCE_DIR}")
 ENDIF(WIN32)
 
-ADD_COMPILE_DEFINITIONS(GLEW_STATIC)
+ADD_DEFINITIONS(-DGLEW_STATIC)
 
+IF(UNIX)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
-SET(MY_SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+ENDIF(UNIX)
+
+IF(WIN32)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/Debug")
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin/Release")
+
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin")
+FILE(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+ENDIF()
+
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Debug")
+FILE(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Debug")
+ENDIF()
+
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Release")
+FILE(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Release")
+ENDIF()
 
 # prepare the src files
-IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/externel.zip)
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/external.zip)
 EXECUTE_PROCESS(
     COMMAND git pull origin master
 )
 ENDIF()
-IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/externel/glew)
+
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/glew)
 EXECUTE_PROCESS(
-    COMMAND unzip ${CMAKE_SOURCE_DIR}/externel/externel.zip -d ${CMAKE_SOURCE_DIR}/externel
+    COMMAND tar -xf ${CMAKE_SOURCE_DIR}/external/external.zip -C ${CMAKE_SOURCE_DIR}/external
 )
 ENDIF()
 
-IF(WIN32)
-IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/SDL2.dll)
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Debug/SDL2.dll")
 EXECUTE_PROCESS(
-    COMMAND cp ${CMAKE_SOURCE_DIR}/externel/SDL2/bin/SDL2.dll ${CMAKE_SOURCE_DIR}/SDL2.dll
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/SDL2/bin/SDL2.dll ${CMAKE_SOURCE_DIR}/bin/Debug
 )
 ENDIF()
-if(NOT EXISTS ${CMAKE_SOURCE_DIR}/libassimp.dll)
+
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Release/SDL2.dll")
 EXECUTE_PROCESS(
-    COMMAND cp ${CMAKE_SOURCE_DIR}/externel/assimp/bin/libassimp.dll ${CMAKE_SOURCE_DIR}/libassimp.dll
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/SDL2/bin/SDL2.dll ${CMAKE_SOURCE_DIR}/bin/Release
+)
+ENDIF()
+
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Debug/assimp-vc140-mt.dll")
+EXECUTE_PROCESS(
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/Assimp/bin/assimp-vc140-mt.dll ${CMAKE_SOURCE_DIR}/bin/Debug
+)
+ENDIF()
+
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Release/assimp-vc140-mt.dll")
+EXECUTE_PROCESS(
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/Assimp/bin/assimp-vc140-mt.dll ${CMAKE_SOURCE_DIR}/bin/Release
 )
 ENDIF()
 ENDIF(WIN32)
 
-FILE(GLOB_RECURSE SRC_FILES "${MY_SRC_DIR}/*.cpp")
-FILE(GLOB_RECURSE SRC_IMGUI "${CMAKE_SOURCE_DIR}/externel/imgui/src/*.cpp")
+FILE(GLOB_RECURSE SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
+FILE(GLOB_RECURSE SRC_IMGUI "${CMAKE_SOURCE_DIR}/external/imgui/src/*.cpp")
 
 ADD_LIBRARY(IMGUI_LIBRARIES
     ${SRC_IMGUI} 
@@ -47,26 +78,26 @@ ADD_LIBRARY(IMGUI_LIBRARIES
 IF(WIN32)
 INCLUDE_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/include"
-    "${CMAKE_SOURCE_DIR}/externel/glew/include"
-    "${CMAKE_SOURCE_DIR}/externel/glm/include"
-    "${CMAKE_SOURCE_DIR}/externel/SDL2/include"
-    "${CMAKE_SOURCE_DIR}/externel/imgui/include"
-    "${CMAKE_SOURCE_DIR}/externel/assimp/include"
-    "${CMAKE_SOURCE_DIR}/externel/SOIL/include"
+    "${CMAKE_SOURCE_DIR}/external/glew/include"
+    "${CMAKE_SOURCE_DIR}/external/glm/include"
+    "${CMAKE_SOURCE_DIR}/external/SDL2/include"
+    "${CMAKE_SOURCE_DIR}/external/imgui/include"
+    "${CMAKE_SOURCE_DIR}/external/Assimp/include"
+    "${CMAKE_SOURCE_DIR}/external/SOIL/include"
 )
 
 LINK_DIRECTORIES(
-    "${CMAKE_SOURCE_DIR}/externel/glew/lib"
-    "${CMAKE_SOURCE_DIR}/externel/SDL2/lib"
-    "${CMAKE_SOURCE_DIR}/externel/assimp/lib"
-    "${CMAKE_SOURCE_DIR}/externel/SOIL/lib"
+    "${CMAKE_SOURCE_DIR}/external/glew/lib"
+    "${CMAKE_SOURCE_DIR}/external/SDL2/lib"
+    "${CMAKE_SOURCE_DIR}/external/Assimp/lib"
+    "${CMAKE_SOURCE_DIR}/external/SOIL/lib"
 )
 ENDIF(WIN32)
 
 IF(UNIX)
 INCLUDE_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/include"
-    "${CMAKE_SOURCE_DIR}/externel/imgui/include"
+    "${CMAKE_SOURCE_DIR}/external/imgui/include"
 )
 # setup glew
 FIND_PACKAGE(GLEW REQUIRED)
@@ -109,11 +140,10 @@ ADD_EXECUTABLE(run ${SRC_FILES})
 
 IF(WIN32)
 TARGET_LINK_LIBRARIES(run
-    mingw32
     SDL2main
     SDL2
     glew32s
-    assimp
+    assimp-vc140-mt
     SOIL
     IMGUI_LIBRARIES
     ${OPENGL_LIBRARIES}

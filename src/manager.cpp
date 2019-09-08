@@ -115,9 +115,10 @@ void GlobalManager::update()
 
 void GlobalManager::load_models()
 {
+#ifdef __unix__
     DIR *d;
     struct dirent *dir;
-    d = opendir("./models");
+    d = opendir(std::string(MY_ROOT_DIR) + "/models");
     if(!d)
     {
         std::cout << "\"models\" folder not found" << std::endl;
@@ -129,13 +130,35 @@ void GlobalManager::load_models()
             this->models.push_back(dir->d_name);
     }
     closedir(d);
+#endif
+
+#ifdef _WIN32
+    WIN32_FIND_DATA fd;
+    HANDLE hFind;
+    hFind = FindFirstFile(LPCSTR((std::string(MY_ROOT_DIR) + "/models/*").c_str()), &fd);
+    if(hFind != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            std::string filename = std::string(fd.cFileName);
+            this->models.push_back(filename);
+        } while(FindNextFile(hFind, &fd));
+        FindClose(hFind);
+    }
+    else
+    {
+        std::cout << "\"models\" folder not found" << std::endl;
+        exit(1);
+    }
+#endif
 }
 
 void GlobalManager::load_shaders()
 {
+#ifdef __unix__
     DIR *d;
     struct dirent *dir;
-    d = opendir("./shaders");
+    d = opendir(std::string(MY_ROOT_DIR) + "/shaders");
     if(!d)
     {
         std::cout << "\"shaders\" folder not found" << std::endl;
@@ -147,4 +170,25 @@ void GlobalManager::load_shaders()
             this->shaders.push_back(dir->d_name);
     }
     closedir(d);
+#endif
+
+#ifdef _WIN32
+    WIN32_FIND_DATA fd;
+    HANDLE hFind;
+    hFind = FindFirstFile(LPCSTR((std::string(MY_ROOT_DIR) + "/shaders/*").c_str()), &fd);
+    if(hFind != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            std::string filename = std::string(fd.cFileName);
+            this->shaders.push_back(filename);
+        } while(FindNextFile(hFind, &fd));
+        FindClose(hFind);
+    }
+    else
+    {
+        std::cout << "\"shaders\" folder not found" << std::endl;
+        exit(1);
+    }
+#endif
 }

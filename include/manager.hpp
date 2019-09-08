@@ -10,10 +10,21 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+#ifdef __unix__
 #include <dirent.h>
+#endif
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 #include "camera.hpp"
 #include "renderer.hpp"
+
+#ifndef MY_ROOT_DIR
+#define MY_ROOT_DIR "."
+#endif
 
 enum GlobalVariables
 {

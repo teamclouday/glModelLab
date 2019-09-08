@@ -10,10 +10,6 @@
 #include <string>
 #include <sstream>
 
-#ifdef _WIN32
-#include <ShellApi.h>
-#endif
-
 struct RENDER_CONFIG
 {
     ImVec4 menu_background_color = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);

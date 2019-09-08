@@ -65,7 +65,7 @@ void Renderer::renderMenu()
                 #endif
                 
                 #ifdef _WIN32
-                ShellExecute(NULL, "open", L"https://github.com/teamclouday/glModelLab", NULL, NULL, SW_SHOWNORMAL);
+                system("cmd /c start https://github.com/teamclouday/glModelLab");
                 #endif
             }
             ImGui::PopFont();

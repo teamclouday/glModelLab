@@ -109,6 +109,7 @@ void Model::draw(GLuint program)
 std::string Model::findModelName(std::string folderPath)
 {
     std::string model = "";
+#ifdef __unix__
     DIR *dir;
     struct dirent *ent;
     dir = opendir(folderPath.c_str());
@@ -133,6 +134,34 @@ std::string Model::findModelName(std::string folderPath)
         }
     }
     closedir (dir);
+#endif
+
+#ifdef _WIN32
+    WIN32_FIND_DATA fd;
+    HANDLE hFind;
+	hFind = FindFirstFile(LPCSTR((folderPath + "/*").c_str()), &fd);
+    if(hFind != INVALID_HANDLE_VALUE)
+    {
+		do
+		{
+			std::string filename = std::string(fd.cFileName);
+			// std::string filename((const char*)&name[0], sizeof(wchar_t)/sizeof(char)*name.size());
+			std::string ext = filename.substr(filename.find_last_of(".") + 1);
+			if (ext == "obj" ||
+				ext == "3ds" ||
+				ext == "gltf" ||
+				ext == "fbx" ||
+				ext == "dae" ||
+				ext == "dxf" ||
+				ext == "stl")
+			{
+				model = filename;
+				break;
+			}
+		} while (FindNextFile(hFind, &fd));
+		FindClose(hFind);
+    }
+#endif
     return model;
 }
 
