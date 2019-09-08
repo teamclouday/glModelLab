@@ -2,6 +2,6 @@ run*
 *.dll
 .vscode
 build/*
-externel/*
-!externel/externel.zip
+external/*
+!external/external.zip
 models/*
