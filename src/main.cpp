@@ -135,7 +135,7 @@ void quitAll()
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
-    if(!manager)
+    if(manager)
         delete manager;
 
     SDL_Quit();
@@ -158,7 +158,17 @@ bool pollEvents()
                 switch(e.key.keysym.sym)
                 {
                     case SDLK_ESCAPE:
-                        return true;
+                    {
+                        if(manager->myCamera->focus)
+                        {
+                            manager->myCamera->focus = false;
+                            SDL_ShowCursor(SDL_TRUE);
+                            SDL_CaptureMouse(SDL_FALSE);
+                        }
+                        else
+                            return true;
+                        break;
+                    }
                     case SDLK_F11:
                     {
                         bool isFullScreen = SDL_GetWindowFlags(manager->myWindow) & SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -172,18 +182,83 @@ bool pollEvents()
 #endif
                         break;
                     }
-                }
-            }
-            case SDL_WINDOWEVENT:
-            {
-                switch(e.window.event)
-                {
-                    case SDL_WINDOWEVENT_RESIZED:
-                        glViewport(0, 0, e.window.data1, e.window.data2);
+                    case SDLK_r:
+                    {
+                        if(manager->myCamera->focus)
+                            manager->myCamera->reset();
+                        break;
+                    }
+                    case SDLK_w:
+                        if(manager->myCamera->focus)
+                            manager->myCamera->keyMap[0] = true;
+                        break;
+                    case SDLK_a:
+                        if(manager->myCamera->focus)
+                            manager->myCamera->keyMap[1] = true;
+                        break;
+                    case SDLK_s:
+                        if(manager->myCamera->focus)
+                            manager->myCamera->keyMap[2] = true;
+                        break;
+                    case SDLK_d:
+                        if(manager->myCamera->focus)
+                            manager->myCamera->keyMap[3] = true;
+                        break;
+                    case SDLK_UP:
+                        if(manager->myCamera->focus)
+                            manager->myCamera->keyMap[4] = true;
+                        break;
+                    case SDLK_DOWN:
+                        if(manager->myCamera->focus)
+                            manager->myCamera->keyMap[5] = true;
                         break;
                 }
+                break;
+            }
+            case SDL_MOUSEBUTTONDOWN:
+            {
+                if(!ImGui::IsAnyWindowHovered() && !manager->myCamera->focus)
+                {
+                    manager->myCamera->focus = true;
+                    SDL_ShowCursor(SDL_FALSE);
+                    int w, h;
+                    SDL_GetWindowSize(manager->myWindow, &w, &h);
+                    manager->myCamera->mousePos = {(int)(w/2), (int)(h/2)};
+                    SDL_WarpMouseInWindow(manager->myWindow, manager->myCamera->mousePos[0], manager->myCamera->mousePos[1]);
+                    SDL_CaptureMouse(SDL_TRUE);
+                }
+                break;
+            }
+            case SDL_KEYUP:
+            {
+                switch(e.key.keysym.sym)
+                {
+                    case SDLK_w:
+                        manager->myCamera->keyMap[0] = false;
+                        break;
+                    case SDLK_a:
+                        manager->myCamera->keyMap[1] = false;
+                        break;
+                    case SDLK_s:
+                        manager->myCamera->keyMap[2] = false;
+                        break;
+                    case SDLK_d:
+                        manager->myCamera->keyMap[3] = false;
+                        break;
+                    case SDLK_UP:
+                        manager->myCamera->keyMap[4] = false;
+                        break;
+                    case SDLK_DOWN:
+                        manager->myCamera->keyMap[5] = false;
+                        break;
+                }
+                break;
             }
         }
+    }
+    if(manager->myCamera->focus)
+    {
+        manager->myCamera->update(0.0f, true);
     }
     return false;
 }

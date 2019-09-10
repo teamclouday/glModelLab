@@ -10,6 +10,17 @@
 #include <string>
 #include <sstream>
 
+#ifdef __unix__
+#include <dirent.h>
+#endif
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
+#include "model.hpp"
+#include "shader.hpp"
+
 struct RENDER_CONFIG
 {
     ImVec4 menu_background_color = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
@@ -21,6 +32,8 @@ struct RENDER_CONFIG
     int window_h = 100;
     int modelID = 0;
     int shaderID = 0;
+    Model *model = nullptr;
+    Shader *shader = nullptr;
 };
 
 struct MENU_CONFIG
@@ -49,4 +62,6 @@ public:
 
 private:
     void renderMenu();
+    void loadModel();
+    void loadShader();
 };

@@ -9,15 +9,15 @@ GlobalManager::GlobalManager(ProgramInfo *info)
 
 GlobalManager::~GlobalManager()
 {
-    if(!this->myWindow)
+    if(this->myWindow)
         SDL_DestroyWindow(this->myWindow);
-    if(!this->myContext)
+    if(this->myContext)
         SDL_GL_DeleteContext(this->myContext);
-    if(!this->myCamera)
+    if(this->myCamera)
         delete this->myCamera;
-    if(!this->myRenderer)
+    if(this->myRenderer)
         delete this->myRenderer;
-    if(!this->info)
+    if(this->info)
         delete this->info;
 }
 

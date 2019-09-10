@@ -92,7 +92,8 @@ void Renderer::renderMenu()
         for(unsigned i = 0; i < manager->models.size(); i++)
         {
             ImGui::PushID(i);
-            ImGui::RadioButton(manager->models[i].c_str(), &pRender->modelID, i);
+            if(ImGui::RadioButton(manager->models[i].c_str(), &pRender->modelID, i))
+                this->loadModel();
             ImGui::PopID();
         }
         if(!manager->models.size())
@@ -113,7 +114,8 @@ void Renderer::renderMenu()
         for(unsigned i = 0; i < manager->shaders.size(); i++)
         {
             ImGui::PushID(i);
-            ImGui::RadioButton(manager->shaders[i].c_str(), &pRender->shaderID, i);
+            if(ImGui::RadioButton(manager->shaders[i].c_str(), &pRender->shaderID, i))
+                this->loadShader();
             ImGui::PopID();
         }
         if(!manager->shaders.size())
@@ -205,9 +207,113 @@ void Renderer::renderScene()
     glClearDepth(1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    Shader *myShader = this->myRenderConfig->shader;
+    Model *myModel = this->myRenderConfig->model;
+
+    if(myShader && myModel)
+    {
+        manager->myCamera->update(ImGui::GetIO().Framerate, false);
+        glm::mat4 view = manager->myCamera->GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)pRender->window_w/(float)pRender->window_h, 0.1f, 1000.0f);
+        glm::mat4 model(1.0f);
+        myShader->use();
+        glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        myModel->draw(myShader->programID);
+        myShader->disuse();
+    }
 
     this->renderMenu();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(manager->myWindow);
+}
+
+void Renderer::loadModel()
+{
+    if(this->myRenderConfig->model)
+        delete this->myRenderConfig->model;
+    this->myRenderConfig->model = new Model(std::string(MY_ROOT_DIR) + "/models/" + manager->models[this->myRenderConfig->modelID]);
+}
+
+void Renderer::loadShader()
+{
+    if(this->myRenderConfig->shader)
+        delete this->myRenderConfig->shader;
+
+    Shader *newShader = new Shader();
+
+#ifdef __unix__
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(std::string(MY_ROOT_DIR) + "/shaders/" + manager->shaders[this->myRenderConfig->shaderID]);
+    while((dir = readdir(d)) != NULL)
+    {
+        std::string filename = std::string(dir->d_name);
+        if(filename[0] == '.')
+            continue;
+        std::string ext = filename.substr(filename.find_last_of(".") + 1);
+        GLenum shaderType = -1;
+        if(ext == "vert")
+            shaderType = GL_VERTEX_SHADER;
+        else if(ext == "frag")
+            shaderType = GL_FRAGMENT_SHADER;
+        else if(ext == "comp")
+            shaderType = GL_COMPUTE_SHADER;
+        else if(ext == "tesc")
+            shaderType = GL_TESS_CONTROL_SHADER;
+        else if(ext == "tese")
+            shaderType = GL_TESS_EVALUATION_SHADER;
+        else if(ext == "geom")
+            shaderType = GL_GEOMETRY_SHADER;
+        if(shaderType < 0)
+            continue;
+        else
+            newShader->add(std::string(MY_ROOT_DIR) + "/shaders/" + manager->shaders[this->myRenderConfig->shaderID] + "/" + filename, shaderType);
+    }
+    closedir(d);
+#endif
+
+#ifdef _WIN32
+    WIN32_FIND_DATA fd;
+    HANDLE hFind;
+    hFind = FindFirstFile(LPCSTR((std::string(MY_ROOT_DIR) + "/shaders/" + manager->shaders[this->myRenderConfig->shaderID] + "/*").c_str()), &fd);
+    if(hFind != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            std::string filename = std::string(fd.cFileName);
+            if(filename[0] == '.')
+                continue;
+            std::string ext = filename.substr(filename.find_last_of(".") + 1);
+            GLenum shaderType = -1;
+            if(ext == "vert")
+                shaderType = GL_VERTEX_SHADER;
+            else if(ext == "frag")
+                shaderType = GL_FRAGMENT_SHADER;
+            else if(ext == "comp")
+                shaderType = GL_COMPUTE_SHADER;
+            else if(ext == "tesc")
+                shaderType = GL_TESS_CONTROL_SHADER;
+            else if(ext == "tese")
+                shaderType = GL_TESS_EVALUATION_SHADER;
+            else if(ext == "geom")
+                shaderType = GL_GEOMETRY_SHADER;
+            if(shaderType < 0)
+                continue;
+            else
+                newShader->add(std::string(MY_ROOT_DIR) + "/shaders/" + manager->shaders[this->myRenderConfig->shaderID] + "/" + filename, shaderType);
+        } while(FindNextFile(hFind, &fd));
+        FindClose(hFind);
+    }
+#endif
+
+    if(!newShader->compile())
+    {
+        this->myRenderConfig->shader = nullptr;
+        this->myRenderConfig->shaderID = -1;
+    }
+    else
+        this->myRenderConfig->shader = newShader;
 }
