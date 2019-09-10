@@ -1,7 +1,9 @@
 #include "manager.hpp"
 
-GlobalManager::GlobalManager()
+GlobalManager::GlobalManager(ProgramInfo *info)
 {
+    this->info = info;
+    this->fpsLimit = true;
     this->update();
 }
 
@@ -15,6 +17,8 @@ GlobalManager::~GlobalManager()
         delete this->myCamera;
     if(!this->myRenderer)
         delete this->myRenderer;
+    if(!this->info)
+        delete this->info;
 }
 
 // return true if previous value is overrided
@@ -141,7 +145,8 @@ void GlobalManager::load_models()
         do
         {
             std::string filename = std::string(fd.cFileName);
-            this->models.push_back(filename);
+            if(filename[0] != '.')
+                this->models.push_back(filename);
         } while(FindNextFile(hFind, &fd));
         FindClose(hFind);
     }
@@ -181,7 +186,8 @@ void GlobalManager::load_shaders()
         do
         {
             std::string filename = std::string(fd.cFileName);
-            this->shaders.push_back(filename);
+            if(filename[0] != '.')
+                this->shaders.push_back(filename);
         } while(FindNextFile(hFind, &fd));
         FindClose(hFind);
     }

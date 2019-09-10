@@ -84,12 +84,34 @@ bool initEnv()
     ImGui_ImplOpenGL3_Init(glsl_ver);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     ImGui::GetIO().IniFilename = nullptr;
+
+    // get system info
+    std::stringstream gl_version;
+    gl_version << glGetString(GL_VERSION);
+    std::stringstream glsl_version;
+    glsl_version << glGetString(GL_SHADING_LANGUAGE_VERSION);
+    std::stringstream imgui_version;
+    imgui_version << ImGui::GetVersion();
+    std::stringstream sdl_version;
+    SDL_version version;
+    SDL_GetVersion(&version);
+    sdl_version << (int)version.major << "." << (int)version.minor << "." << (int)version.patch;
+    std::stringstream assimp_version;
+    assimp_version << aiGetVersionMajor() << "." << aiGetVersionMinor();
+
+    ProgramInfo *info = new ProgramInfo();
+    info->Assimp_Version = assimp_version.str();
+    info->GLSL_Version = glsl_version.str();
+    info->ImGui_Version = imgui_version.str();
+    info->OpenGL_Version = gl_version.str();
+    info->SDL2_Version = sdl_version.str();
+
     // init camera
     Camera *myCamera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
     // init renderer
     Renderer *myRenderer = new Renderer();
     // create manager
-    manager = new GlobalManager();
+    manager = new GlobalManager(info);
     manager->store(GLOB_WINDOW, (void*)myWindow);
     manager->store(GLOB_CONTEXT, (void*)myContext);
     manager->store(GLOB_CAMERA, (void*)myCamera);
@@ -170,7 +192,7 @@ void fpsControl(Uint32* tNow, Uint32 *tPrev)
 {
     *tNow = SDL_GetTicks();
     Uint32 tDelta = *tNow - *tPrev;
-    if(tDelta < (1000 / FPS))
+    if(tDelta < (1000 / FPS) && manager->fpsLimit)
         SDL_Delay((Uint32)(1000 / FPS) - tDelta);
     *tPrev = SDL_GetTicks();
 }

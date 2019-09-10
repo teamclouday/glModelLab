@@ -68,6 +68,7 @@ void Renderer::renderMenu()
                 system("cmd /c start https://github.com/teamclouday/glModelLab");
                 #endif
             }
+            ImGui::MenuItem("System", NULL, &pMenu->displaySystem);
             ImGui::PopFont();
             ImGui::EndMenu();
         }
@@ -150,6 +151,34 @@ void Renderer::renderMenu()
                 "on OpenGL, with easy model loading and configuration\n\n" <<
                 "The author of this program is currently learning shading and shadowing techniques,\n" <<
                 "thus hopefully this program will be upgraded to a versatile and robost system";
+        ImGui::Text(sstr.str().c_str());
+        ImGui::PopFont();
+        ImGui::End();
+        ImGui::PopFont();
+    }
+
+    if(pMenu->displaySystem)
+    {
+        ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(0.9f*pRender->window_w, 0.85f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(pRender->window_alpha);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+        ImGui::Begin("System", &pMenu->displaySystem);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
+        std::stringstream sstr;
+        sstr << "Program System Info:\n\n" <<
+                "External Libraries\n" <<
+                "OpenGL Version: " << manager->info->OpenGL_Version << "\n" <<
+                "GLSL Version: " << manager->info->OpenGL_Version << "\n" <<
+                "SDL2 Version: " << manager->info->SDL2_Version << "\n" <<
+                "Imgui Version: " << manager->info->ImGui_Version << "\n" <<
+                "Assimp Version: " << manager->info->Assimp_Version << "\n\n" <<
+                "Current FPS: " << ImGui::GetIO().Framerate << "\n" <<
+                "FPS Limit: " << ((manager->fpsLimit ? "On" : "Off")) << "\n\n" <<
+                "Current Scene\n" <<
+                "Camera Location: " << "(" << manager->myCamera->Position.x << "," <<
+                                              manager->myCamera->Position.y << "," <<
+                                              manager->myCamera->Position.z << ")\n";
         ImGui::Text(sstr.str().c_str());
         ImGui::PopFont();
         ImGui::End();

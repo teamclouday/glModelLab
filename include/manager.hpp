@@ -34,6 +34,15 @@ enum GlobalVariables
     GLOB_RENDERER,
 };
 
+struct ProgramInfo
+{
+    std::string OpenGL_Version;
+    std::string GLSL_Version;
+    std::string ImGui_Version;
+    std::string SDL2_Version;
+    std::string Assimp_Version;
+};
+
 class GlobalManager
 {
 public:
@@ -41,11 +50,14 @@ public:
     SDL_GLContext myContext;
     Camera *myCamera;
     Renderer *myRenderer;
+    ProgramInfo *info;
+
+    bool fpsLimit;
 
     std::vector<std::string> models;
     std::vector<std::string> shaders;
 
-    GlobalManager();
+    GlobalManager(ProgramInfo *info);
     ~GlobalManager();
 
     bool store(GlobalVariables var, void* pointer);

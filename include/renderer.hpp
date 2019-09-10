@@ -32,6 +32,7 @@ struct MENU_CONFIG
     bool torchLight = false;
     bool displayColors = false;
     bool displayAbout = false;
+    bool displaySystem = false;
 };
 
 class Renderer
