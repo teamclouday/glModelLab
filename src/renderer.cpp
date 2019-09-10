@@ -180,6 +180,8 @@ void Renderer::renderMenu()
                                               manager->myCamera->Position.y << "," <<
                                               manager->myCamera->Position.z << ")\n";
         ImGui::Text(sstr.str().c_str());
+        ImGui::SetCursorPos(ImVec2(200, 200));
+        ImGui::Checkbox("FPS Control", &manager->fpsLimit);
         ImGui::PopFont();
         ImGui::End();
         ImGui::PopFont();
