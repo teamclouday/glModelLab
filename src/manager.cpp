@@ -122,7 +122,7 @@ void GlobalManager::load_models()
 #ifdef __unix__
     DIR *d;
     struct dirent *dir;
-    d = opendir(std::string(MY_ROOT_DIR) + "/models");
+    d = opendir((std::string(MY_ROOT_DIR) + "/models").c_str());
     if(!d)
     {
         std::cout << "\"models\" folder not found" << std::endl;
@@ -163,7 +163,7 @@ void GlobalManager::load_shaders()
 #ifdef __unix__
     DIR *d;
     struct dirent *dir;
-    d = opendir(std::string(MY_ROOT_DIR) + "/shaders");
+    d = opendir((std::string(MY_ROOT_DIR) + "/shaders").c_str());
     if(!d)
     {
         std::cout << "\"shaders\" folder not found" << std::endl;

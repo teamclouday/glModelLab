@@ -247,7 +247,7 @@ void Renderer::loadShader()
 #ifdef __unix__
     DIR *d;
     struct dirent *dir;
-    d = opendir(std::string(MY_ROOT_DIR) + "/shaders/" + manager->shaders[this->myRenderConfig->shaderID]);
+    d = opendir((std::string(MY_ROOT_DIR) + "/shaders/" + manager->shaders[this->myRenderConfig->shaderID]).c_str());
     while((dir = readdir(d)) != NULL)
     {
         std::string filename = std::string(dir->d_name);

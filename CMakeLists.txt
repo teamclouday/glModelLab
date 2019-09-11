@@ -10,8 +10,19 @@ ENDIF(WIN32)
 
 ADD_DEFINITIONS(-DGLEW_STATIC)
 
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/external.zip)
+EXECUTE_PROCESS(
+    COMMAND git pull origin master
+)
+ENDIF()
+
 IF(UNIX)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/glew)
+EXECUTE_PROCESS(
+    COMMAND unzip ${CMAKE_SOURCE_DIR}/external/external.zip -d ${CMAKE_SOURCE_DIR}/external
+)
+ENDIF()
 ENDIF(UNIX)
 
 IF(WIN32)
@@ -28,13 +39,6 @@ ENDIF()
 
 IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Release")
 FILE(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Release")
-ENDIF()
-
-# prepare the src files
-IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/external.zip)
-EXECUTE_PROCESS(
-    COMMAND git pull origin master
-)
 ENDIF()
 
 IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/external/glew)
