@@ -61,9 +61,9 @@ void Camera::update(GLfloat deltaT, bool isMouse)
         if(this->keyMap[3])
             this->ProcessKeyboard(RIGHT, deltaT);
         if(this->keyMap[4])
-            this->mv_zoom -= 0.005f;
-        if(this->keyMap[5])
             this->mv_zoom += 0.005f;
+        if(this->keyMap[5])
+            this->mv_zoom -= 0.005f;
         this->mv_zoom = mv_zoom > 0.0f ? mv_zoom : 0.001f;
         this->mv_zoom = mv_zoom < 5.0f ? mv_zoom : 5.0f;
     }

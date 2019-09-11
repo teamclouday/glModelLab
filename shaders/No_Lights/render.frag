@@ -17,5 +17,5 @@ layout (location = 0) out vec4 color;
 
 void main()
 {
-    color = texture(material.texture_specular1, fs_in.texCoords);
+    color = texture(material.texture_diffuse1, fs_in.texCoords);
 }

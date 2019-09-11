@@ -254,7 +254,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
         aiString str;
         if(mat->GetTexture(type, i, &str) == AI_SUCCESS)
         {
-            GLboolean skip = false;
+            bool skip = false;
             for(GLuint j = 0; j < textures_loaded.size(); j++)
             {
                 if(textures_loaded[j].path == str)

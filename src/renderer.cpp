@@ -216,6 +216,7 @@ void Renderer::renderScene()
         glm::mat4 view = manager->myCamera->GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)pRender->window_w/(float)pRender->window_h, 0.1f, 1000.0f);
         glm::mat4 model(1.0f);
+        model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
         myShader->use();
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
