@@ -1,6 +1,8 @@
 #pragma once
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -42,6 +44,8 @@ private:
     void loadShader();
 
 public:
+    float modelScale;
+
     Lights();
     ~Lights();
 
@@ -49,5 +53,5 @@ public:
     void addDirectLight(const glm::vec3& position, const glm::vec3& direction, const glm::vec4& color);
     void addSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec4& color);
 
-    void drawLights();
+    void drawLights(glm::mat4& view, glm::mat4& perspective);
 };
