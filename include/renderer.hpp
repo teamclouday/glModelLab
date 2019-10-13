@@ -22,6 +22,7 @@
 
 #include "model.hpp"
 #include "shader.hpp"
+#include "lights.hpp"
 
 struct RENDER_CONFIG
 {
@@ -36,6 +37,7 @@ struct RENDER_CONFIG
     int shaderID = 0;
     Model *model = nullptr;
     Shader *shader = nullptr;
+    Lights *lights = nullptr;
 };
 
 struct MENU_CONFIG
