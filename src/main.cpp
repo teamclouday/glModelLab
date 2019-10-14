@@ -76,6 +76,9 @@ bool initEnv()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
+    // enable debug
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(MessageCallback, 0);
     // setup ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

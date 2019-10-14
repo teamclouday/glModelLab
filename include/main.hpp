@@ -27,3 +27,36 @@ bool initEnv();
 void quitAll();
 bool pollEvents();
 void fpsControl(Uint32* tNow, Uint32 *tPrev);
+
+void GLAPIENTRY
+MessageCallback(GLenum source,
+                GLenum type,
+                GLuint id,
+                GLenum severity,
+                GLsizei length,
+                const GLchar* message,
+                const void* userParam)
+{
+    std::stringstream sstr;
+    sstr << "GL CALLBACK ";
+    bool cannot_skip = true;
+    switch(type)
+    {
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            sstr << "(deprecated behavior)";
+            break;
+        case GL_DEBUG_TYPE_ERROR:
+            sstr << "(error)";
+            break;
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            sstr << "(performance)";
+            break;
+        default:
+            sstr << "(other)";
+            cannot_skip = false;
+            break;
+    }
+    sstr << ":" << message;
+    if(cannot_skip)
+        std::cerr << sstr.str() << std::endl;
+}

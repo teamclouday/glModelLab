@@ -7,10 +7,16 @@ Renderer::Renderer()
 {
     this->myRenderConfig = new RENDER_CONFIG();
     this->myMenuConfig = new MENU_CONFIG();
+    this->myRenderConfig->lights = new Lights();
 }
 
 Renderer::~Renderer()
 {
+    delete this->myRenderConfig->lights;
+    if(this->myRenderConfig->model)
+        delete this->myRenderConfig->model;
+    if(this->myRenderConfig->shader)
+        delete this->myRenderConfig->shader;
     delete this->myRenderConfig;
     delete this->myMenuConfig;
 }
@@ -41,7 +47,7 @@ void Renderer::renderMenu()
         if(ImGui::BeginMenu("Lights"))
         {
             ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[3]);
-            ImGui::MenuItem("Point Lights", NULL, &pMenu->pointLights);
+            ImGui::MenuItem("Point Lights", NULL, &pMenu->pointLight);
             ImGui::MenuItem("Direct Lights", NULL, &pMenu->directLight);
             ImGui::MenuItem("Torch Lights", NULL, &pMenu->torchLight);
             ImGui::PopFont();
@@ -51,6 +57,7 @@ void Renderer::renderMenu()
         {
             ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[3]);
             ImGui::MenuItem("Colors", NULL, &pMenu->displayColors);
+            ImGui::MenuItem("Other", NULL, &pMenu->displayOther);
             ImGui::PopFont();
             ImGui::EndMenu();
         }
@@ -140,6 +147,20 @@ void Renderer::renderMenu()
         ImGui::PopFont();
     }
 
+    if(pMenu->displayOther)
+    {
+        ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(0.9f*pRender->window_w, 0.85f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(pRender->window_alpha);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+        ImGui::Begin("Other Options", &pMenu->displayOther);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
+        ImGui::DragFloat("Light Source Size", &pRender->lights->modelScale, 0.001f, 0.0f, 2.0f, "%.3f");
+        ImGui::PopFont();
+        ImGui::End();
+        ImGui::PopFont();
+    }
+
     if(pMenu->displayAbout)
     {
         ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
@@ -188,6 +209,108 @@ void Renderer::renderMenu()
         ImGui::End();
         ImGui::PopFont();
     }
+
+    if(pMenu->pointLight)
+    {
+        ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(0.9f*pRender->window_w, 0.85f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(pRender->window_alpha);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+        ImGui::Begin("Point Lights", &pMenu->pointLight);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
+        std::vector<unsigned> toRemove;
+        for(unsigned i = 0; i < pRender->lights->pointL.size(); i++)
+        {
+            ImGui::PushID(i);
+            ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::ColorEdit4("Color", &pRender->lights->pointL[i]->color[0]);
+            if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
+                toRemove.push_back(i);
+            ImGui::Spacing();
+            ImGui::PopID();
+        }
+        if(!pRender->lights->pointL.size())
+            ImGui::Text("No point light is found now");
+        if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
+            pRender->lights->addPointLight();
+        for(unsigned i = 0; i < toRemove.size(); i++)
+        {
+            delete pRender->lights->pointL[toRemove[i]];
+            pRender->lights->pointL.erase(pRender->lights->pointL.begin()+toRemove[i]);
+        }
+        ImGui::PopFont();
+        ImGui::End();
+        ImGui::PopFont();
+    }
+
+    if(pMenu->directLight)
+    {
+        ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(0.9f*pRender->window_w, 0.85f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(pRender->window_alpha);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+        ImGui::Begin("Direction Lights", &pMenu->directLight);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
+        std::vector<unsigned> toRemove;
+        for(unsigned i = 0; i < pRender->lights->directL.size(); i++)
+        {
+            ImGui::PushID(i);
+            ImGui::DragFloat3("Position", &pRender->lights->directL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat3("Direction", &pRender->lights->directL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::ColorEdit4("Color", &pRender->lights->directL[i]->color[0]);
+            if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
+                toRemove.push_back(i);
+            ImGui::Spacing();
+            ImGui::PopID();
+        }
+        if(!pRender->lights->directL.size())
+            ImGui::Text("No direction light is found now");
+        if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
+            pRender->lights->addDirectLight();
+        for(unsigned i = 0; i < toRemove.size(); i++)
+        {
+            delete pRender->lights->directL[toRemove[i]];
+            pRender->lights->directL.erase(pRender->lights->directL.begin()+toRemove[i]);
+        }
+        ImGui::PopFont();
+        ImGui::End();
+        ImGui::PopFont();
+    }
+
+    if(pMenu->torchLight)
+    {
+        ImGui::SetNextWindowPos(ImVec2(0.05f*pRender->window_w, 0.1f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(0.9f*pRender->window_w, 0.85f*pRender->window_h), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(pRender->window_alpha);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+        ImGui::Begin("Torch Lights", &pMenu->torchLight);
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
+        std::vector<unsigned> toRemove;
+        for(unsigned i = 0; i < pRender->lights->spotL.size(); i++)
+        {
+            ImGui::PushID(i);
+            ImGui::DragFloat3("Position", &pRender->lights->spotL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat3("Direction", &pRender->lights->spotL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::ColorEdit4("Color", &pRender->lights->spotL[i]->color[0]);
+            ImGui::DragFloat("Cut Off", &pRender->lights->spotL[i]->cutoff, 0.1f, 0.0f, 0.0f, "%.2f");
+            if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
+                toRemove.push_back(i);
+            ImGui::Spacing();
+            ImGui::PopID();
+        }
+        if(!pRender->lights->spotL.size())
+            ImGui::Text("No torch light is found now");
+        if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
+            pRender->lights->addSpotLight();
+        for(unsigned i = 0; i < toRemove.size(); i++)
+        {
+            delete pRender->lights->spotL[toRemove[i]];
+            pRender->lights->spotL.erase(pRender->lights->spotL.begin()+toRemove[i]);
+        }
+        ImGui::PopFont();
+        ImGui::End();
+        ImGui::PopFont();
+    }
 }
 
 void Renderer::renderScene()
@@ -223,6 +346,8 @@ void Renderer::renderScene()
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
         myModel->draw(myShader->programID);
         myShader->disuse();
+
+        pRender->lights->drawLights(view, projection);
     }
 
     this->renderMenu();

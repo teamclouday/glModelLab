@@ -44,10 +44,11 @@ struct MENU_CONFIG
 {
     bool displayModels = false;
     bool displayShaders = false;
-    bool pointLights = false;
+    bool pointLight = false;
     bool directLight = false;
     bool torchLight = false;
     bool displayColors = false;
+    bool displayOther = false;
     bool displayAbout = false;
     bool displaySystem = false;
 };
