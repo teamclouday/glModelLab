@@ -226,6 +226,7 @@ void Renderer::renderMenu()
             ImGui::PushID(i);
             ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::ColorEdit3("Color", &pRender->lights->pointL[i]->color[0]);
+            ImGui::DragFloat("Att Coeff", &pRender->lights->pointL[i]->attenuation, 0.0001f, 0.0f, 1.0f, "%.4f");
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();

@@ -12,7 +12,8 @@ in VS_OUT
 {
     vec2 texCoords;
     vec3 normal;
-    vec3 viewDir;
+    vec3 fragPos;
+    vec3 viewPos;
 } fs_in;
 
 layout (location = 0) out vec4 color;
@@ -22,6 +23,7 @@ layout (location = 0) out vec4 color;
 struct PointLight
 {
     vec3 position;
+    float coeff;
     vec3 color;
 };
 
@@ -52,6 +54,7 @@ uniform int NUM_DIRECTL = 0;
 uniform int NUM_SPOTL   = 0;
 
 vec3 calcDirectL(int index, vec3 originalColor);
+vec3 calcPointL(int index, vec3 originalColor);
 
 void main()
 {
@@ -63,6 +66,8 @@ void main()
         vec3 newColor = vec3(0.0, 0.0, 0.0);
         for(int i = 0; i < NUM_DIRECTL; i++)
             newColor += calcDirectL(i, result);
+        for(int i = 0; i < NUM_POINTL; i++)
+            newColor += calcPointL(i, result);
         result = newColor;
     }
     color = vec4(result, 1.0);
@@ -73,9 +78,23 @@ vec3 calcDirectL(int index, vec3 originalColor)
     vec3 lightDir = normalize(-lights.directL[index].direction);
     float diff = max(0.0, dot(fs_in.normal, lightDir));
     vec3 reflectDir = reflect(-lightDir, fs_in.normal);
-    float spec = pow(max(0.0, dot(fs_in.viewDir, reflectDir)), 32.0);
+    float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
     vec3 result = 0.1 * originalColor;
     result += 0.5 * lights.directL[index].color * diff * originalColor;
     result += 0.9 * lights.directL[index].color * spec * originalColor;
+    return result;
+}
+
+vec3 calcPointL(int index, vec3 originalColor)
+{
+    vec3 lightDir = normalize(lights.pointL[index].position - fs_in.fragPos);
+    float diff = max(0.0, dot(fs_in.normal, lightDir));
+    vec3 reflectDir = reflect(-lightDir, fs_in.normal);
+    float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
+    float dis = length(lights.pointL[index].position - fs_in.fragPos);
+    float att = 1.0 / (1.0 + dis*dis*lights.pointL[index].coeff);
+    vec3 result = 0.1 * originalColor;
+    result += att * 0.5 * lights.pointL[index].color * diff * originalColor;
+    result += att * 0.9 * lights.pointL[index].color * spec * originalColor;
     return result;
 }

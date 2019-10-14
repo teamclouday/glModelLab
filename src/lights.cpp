@@ -119,12 +119,13 @@ void Lights::addDirectLight(const glm::vec3& position, const glm::vec3& directio
     this->directL.push_back(newLight);
 }
 
-void Lights::addPointLight(const glm::vec3& position, const glm::vec3& color)
+void Lights::addPointLight(const glm::vec3& position, float att, const glm::vec3& color)
 {
     if(this->pointL.size() == MAX_LIGHTS)
         return;
     PointLight *newLight = new PointLight;
     newLight->color = color;
+    newLight->attenuation = att;
     newLight->position = color;
     this->pointL.push_back(newLight);
 }
@@ -148,8 +149,8 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
     for(unsigned i = 0; i < pointL.size(); i++)
     {
         glm::mat4 model(1.0f);
-        model = glm::scale(model, glm::vec3(this->modelScale));
         model = glm::translate(model, pointL[i]->position);
+        model = glm::scale(model, glm::vec3(this->modelScale));
         glUniform3fv(glGetUniformLocation(this->programID, "light_color"), 1, &pointL[i]->color[0]);
         glUniformMatrix4fv(glGetUniformLocation(this->programID, "mvp"), 1, GL_FALSE, glm::value_ptr(perspective * view * model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -157,8 +158,8 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
     for(unsigned i = 0; i < directL.size(); i++)
     {
         glm::mat4 model(1.0f);
-        model = glm::scale(model, glm::vec3(this->modelScale));
         model = glm::translate(model, directL[i]->position);
+        model = glm::scale(model, glm::vec3(this->modelScale));
         glUniform3fv(glGetUniformLocation(this->programID, "light_color"), 1, &directL[i]->color[0]);
         glUniformMatrix4fv(glGetUniformLocation(this->programID, "mvp"), 1, GL_FALSE, glm::value_ptr(perspective * view * model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -166,8 +167,8 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
     for(unsigned i = 0; i < spotL.size(); i++)
     {
         glm::mat4 model(1.0f);
-        model = glm::scale(model, glm::vec3(this->modelScale));
         model = glm::translate(model, spotL[i]->position);
+        model = glm::scale(model, glm::vec3(this->modelScale));
         glUniform3fv(glGetUniformLocation(this->programID, "light_color"), 1, &spotL[i]->color[0]);
         glUniformMatrix4fv(glGetUniformLocation(this->programID, "mvp"), 1, GL_FALSE, glm::value_ptr(perspective * view * model));
         glDrawArrays(GL_TRIANGLES, 0, 36);

@@ -13,7 +13,8 @@ out VS_OUT
 {
     vec2 texCoords;
     vec3 normal;
-    vec3 viewDir;
+    vec3 fragPos;
+    vec3 viewPos;
 } vs_out;
 
 void main()
@@ -21,5 +22,6 @@ void main()
     gl_Position = projection * view * model * vec4(position, 1.0);
     vs_out.texCoords = texCoords;
     vs_out.normal = normal;
-    vs_out.viewDir = normalize(viewPos - position);
+    vs_out.fragPos = position;
+    vs_out.viewPos = viewPos;
 }
