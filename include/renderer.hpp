@@ -40,6 +40,7 @@ struct RENDER_CONFIG
     Model *model = nullptr;
     Shader *shader = nullptr;
     Lights *lights = nullptr;
+    glm::vec3 model_pos = glm::vec3(0.0f);
 };
 
 struct MENU_CONFIG

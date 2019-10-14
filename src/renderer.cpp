@@ -158,6 +158,8 @@ void Renderer::renderMenu()
         ImGui::DragFloat("View Sight Near", &pRender->sight_near, 0.0001f, 0.0001f, 1.0f, "%.4f");
         ImGui::DragFloat("View Sight Far", &pRender->sight_far, 0.1f, 100.0f, 10000.0f, "%.4f");
         ImGui::DragFloat("Light Source Scale", &pRender->lights->modelScale, 0.001f, 0.0f, 1.0f, "%.3f");
+        ImGui::DragFloat("Model Scale", &manager->myCamera->mv_zoom, 0.001f, 0.001f, 5.0f, "%.3f");
+        ImGui::DragFloat3("Model Position", &pRender->model_pos[0], 0.1f, 0.0f, 0.0f, "%.2f");
         ImGui::PopFont();
         ImGui::End();
         ImGui::PopFont();
@@ -351,6 +353,7 @@ void Renderer::renderScene()
         glm::mat4 view = manager->myCamera->GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)pRender->window_w/(float)pRender->window_h, pRender->sight_near, pRender->sight_far);
         glm::mat4 model(1.0f);
+        model = glm::translate(model, pRender->model_pos);
         model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
         myShader->use();
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
