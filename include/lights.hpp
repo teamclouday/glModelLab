@@ -7,6 +7,8 @@
 #include <string>
 #include <sstream>
 
+#define MAX_LIGHTS  5
+
 struct PointLight
 {
     glm::vec3 position;
@@ -37,6 +39,7 @@ class Lights
 private:
     GLuint programID;
     GLuint VAO;
+    GLuint UBO;
 
     void loadShader();
 
@@ -54,4 +57,5 @@ public:
     void addSpotLight(const glm::vec3& position = glm::vec3(1.0f), const glm::vec3& direction = glm::vec3(1.0f), float cutoff = 0.5f, const glm::vec4& color = glm::vec4(1.0f));
 
     void drawLights(glm::mat4& view, glm::mat4& perspective);
+    void bind(GLuint programID);
 };

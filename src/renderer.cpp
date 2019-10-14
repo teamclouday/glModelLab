@@ -155,7 +155,7 @@ void Renderer::renderMenu()
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
         ImGui::Begin("Other Options", &pMenu->displayOther);
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
-        ImGui::DragFloat("Light Source Size", &pRender->lights->modelScale, 0.001f, 0.0f, 2.0f, "%.3f");
+        ImGui::DragFloat("Light Source Size", &pRender->lights->modelScale, 0.001f, 0.0f, 1.0f, "%.3f");
         ImGui::PopFont();
         ImGui::End();
         ImGui::PopFont();
@@ -231,8 +231,11 @@ void Renderer::renderMenu()
         }
         if(!pRender->lights->pointL.size())
             ImGui::Text("No point light is found now");
-        if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
-            pRender->lights->addPointLight();
+        if(pRender->lights->pointL.size() < MAX_LIGHTS)
+        {
+            if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
+                pRender->lights->addPointLight();
+        }
         for(unsigned i = 0; i < toRemove.size(); i++)
         {
             delete pRender->lights->pointL[toRemove[i]];
@@ -265,8 +268,11 @@ void Renderer::renderMenu()
         }
         if(!pRender->lights->directL.size())
             ImGui::Text("No direction light is found now");
-        if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
-            pRender->lights->addDirectLight();
+        if(pRender->lights->directL.size() < MAX_LIGHTS)
+        {
+            if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
+                pRender->lights->addDirectLight();
+        }
         for(unsigned i = 0; i < toRemove.size(); i++)
         {
             delete pRender->lights->directL[toRemove[i]];
@@ -300,8 +306,11 @@ void Renderer::renderMenu()
         }
         if(!pRender->lights->spotL.size())
             ImGui::Text("No torch light is found now");
-        if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
-            pRender->lights->addSpotLight();
+        if(pRender->lights->spotL.size() < MAX_LIGHTS)
+        {
+            if(ImGui::Button("Add new light", ImVec2(150.0f, 40.0f)))
+                pRender->lights->addSpotLight();
+        }
         for(unsigned i = 0; i < toRemove.size(); i++)
         {
             delete pRender->lights->spotL[toRemove[i]];
@@ -344,6 +353,9 @@ void Renderer::renderScene()
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+        pRender->lights->bind(myShader->programID);
+
         myModel->draw(myShader->programID);
         myShader->disuse();
 

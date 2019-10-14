@@ -4,7 +4,11 @@
 Lights::Lights()
 {
     glGenVertexArrays(1, &this->VAO);
-    this->modelScale = 1.0f;
+    glGenBuffers(1, &this->UBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, this->UBO);
+    glBufferData(GL_UNIFORM_BUFFER, (MAX_LIGHTS*(sizeof(DirectLight)+sizeof(SpotLight)+sizeof(PointLight))), NULL, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    this->modelScale = 0.5f;
     loadShader();
 }
 
@@ -19,6 +23,7 @@ Lights::~Lights()
     if(this->programID)
         glDeleteProgram(this->programID);
     glDeleteVertexArrays(1, &this->VAO);
+    glDeleteBuffers(1, &this->UBO);
 }
 
 void Lights::loadShader()
@@ -105,6 +110,8 @@ void Lights::loadShader()
 
 void Lights::addDirectLight(const glm::vec3& position, const glm::vec3& direction, const glm::vec4& color)
 {
+    if(this->directL.size() == MAX_LIGHTS)
+        return;
     DirectLight *newLight = new DirectLight;
     newLight->color = color;
     newLight->direction = direction;
@@ -114,6 +121,8 @@ void Lights::addDirectLight(const glm::vec3& position, const glm::vec3& directio
 
 void Lights::addPointLight(const glm::vec3& position, const glm::vec4& color)
 {
+    if(this->pointL.size() == MAX_LIGHTS)
+        return;
     PointLight *newLight = new PointLight;
     newLight->color = color;
     newLight->position = color;
@@ -122,6 +131,8 @@ void Lights::addPointLight(const glm::vec3& position, const glm::vec4& color)
 
 void Lights::addSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec4& color)
 {
+    if(this->spotL.size() == MAX_LIGHTS)
+        return;
     SpotLight *newLight = new SpotLight;
     newLight->position = position;
     newLight->direction = direction;
@@ -163,4 +174,40 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
     }
     glUseProgram(0);
     glBindVertexArray(0);
+}
+
+void Lights::bind(GLuint programID)
+{
+    GLuint ID = glGetUniformBlockIndex(programID, "LIGHTS");
+    if(ID == GL_INVALID_INDEX)
+        return;
+    glUniformBlockBinding(programID, ID, 2);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 2, this->UBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, this->UBO);
+    // map point lights first
+    PointLight* ptr1 = (PointLight*)glMapBufferRange(GL_UNIFORM_BUFFER, 0, MAX_LIGHTS*sizeof(PointLight), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+    for(unsigned i = 0; i < this->pointL.size(); i++)
+    {
+        ptr1[i] = *this->pointL[i];
+    }
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    // map direct lights next
+    DirectLight* ptr2 = (DirectLight*)glMapBufferRange(GL_UNIFORM_BUFFER, MAX_LIGHTS*(sizeof(PointLight)), MAX_LIGHTS*sizeof(DirectLight), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+    for(unsigned i = 0; i < this->directL.size(); i++)
+    {
+        ptr2[i] = *this->directL[i];
+    }
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    // map spot lights last
+    SpotLight* ptr3 = (SpotLight*)glMapBufferRange(GL_UNIFORM_BUFFER, MAX_LIGHTS*(sizeof(PointLight)+sizeof(DirectLight)), MAX_LIGHTS*sizeof(SpotLight), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+    for(unsigned i = 0; i < this->spotL.size(); i++)
+    {
+        ptr3[i] = *this->spotL[i];
+    }
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    // glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glUniform1i(glGetUniformLocation(programID, "NUM_POINTL"), (GLint)this->pointL.size());
+    glUniform1i(glGetUniformLocation(programID, "NUM_DIRECTL"), (GLint)this->directL.size());
+    glUniform1i(glGetUniformLocation(programID, "NUM_SPOTL"), (GLint)this->spotL.size());
 }
