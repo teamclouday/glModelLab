@@ -206,7 +206,7 @@ void Lights::bind(GLuint program)
         ptr3[i] = *this->spotL[i];
     }
     glUnmapBuffer(GL_UNIFORM_BUFFER);
-    // glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     glUniform1i(glGetUniformLocation(program, "NUM_POINTL"), (GLint)this->pointL.size());
     glUniform1i(glGetUniformLocation(program, "NUM_DIRECTL"), (GLint)this->directL.size());

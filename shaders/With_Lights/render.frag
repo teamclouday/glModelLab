@@ -79,7 +79,7 @@ vec3 calcDirectL(int index, vec3 originalColor)
     float diff = max(0.0, dot(fs_in.normal, lightDir));
     vec3 reflectDir = reflect(-lightDir, fs_in.normal);
     float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
-    vec3 result = 0.1 * originalColor;
+    vec3 result = 0.05 * originalColor;
     result += 0.5 * lights.directL[index].color * diff * originalColor;
     result += 0.9 * lights.directL[index].color * spec * originalColor;
     return result;
@@ -93,7 +93,7 @@ vec3 calcPointL(int index, vec3 originalColor)
     float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
     float dis = length(lights.pointL[index].position - fs_in.fragPos);
     float att = 1.0 / (1.0 + dis*dis*lights.pointL[index].coeff);
-    vec3 result = 0.1 * originalColor;
+    vec3 result = 0.05 * originalColor;
     result += att * 0.5 * lights.pointL[index].color * diff * originalColor;
     result += att * 0.9 * lights.pointL[index].color * spec * originalColor;
     return result;

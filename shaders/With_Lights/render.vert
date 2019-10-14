@@ -22,6 +22,6 @@ void main()
     gl_Position = projection * view * model * vec4(position, 1.0);
     vs_out.texCoords = texCoords;
     vs_out.normal = normal;
-    vs_out.fragPos = model * position;
+    vs_out.fragPos = vec3(model * vec4(position, 1.0));
     vs_out.viewPos = viewPos;
 }
