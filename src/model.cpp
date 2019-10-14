@@ -53,7 +53,6 @@ void Mesh::draw(GLuint program)
 
     GLuint diffuseNr = 1;
     GLuint specularNr = 1;
-    GLuint ambientNr = 1;
     for(GLuint i = 0; i < this->textures.size(); i++)
     {
         glActiveTexture(GL_TEXTURE0 + i);
@@ -65,13 +64,15 @@ void Mesh::draw(GLuint program)
             ss << diffuseNr++;
         else if(name == "texture_specular")
             ss << specularNr++;
-        else if(name == "texture_ambient")
-            ss << ambientNr++;
         number = ss.str();
 
         glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
         glUniform1i(glGetUniformLocation(program, ("Material." + name + number).c_str()), i);
     }
+    if(!this->textures.size())
+        glUniform1f(glGetUniformLocation(program, "material_exists"), 0.0f);
+    else
+        glUniform1f(glGetUniformLocation(program, "material_exists"), 1.0f);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
@@ -239,8 +240,6 @@ Mesh *Model::processMesh(aiMesh* mesh, const aiScene* scene)
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
         std::vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-        std::vector<Texture> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_ambient");
-        textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
     }
     Mesh* newMesh = new Mesh(vertices, indices, textures);
     return newMesh;
