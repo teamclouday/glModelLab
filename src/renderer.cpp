@@ -155,7 +155,9 @@ void Renderer::renderMenu()
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
         ImGui::Begin("Other Options", &pMenu->displayOther);
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
-        ImGui::DragFloat("Light Source Size", &pRender->lights->modelScale, 0.001f, 0.0f, 1.0f, "%.3f");
+        ImGui::DragFloat("View Sight Near", &pRender->sight_near, 0.0001f, 0.0001f, 1.0f, "%.4f");
+        ImGui::DragFloat("View Sight Far", &pRender->sight_far, 0.1f, 100.0f, 10000.0f, "%.4f");
+        ImGui::DragFloat("Light Source Scale", &pRender->lights->modelScale, 0.001f, 0.0f, 1.0f, "%.3f");
         ImGui::PopFont();
         ImGui::End();
         ImGui::PopFont();
@@ -223,7 +225,7 @@ void Renderer::renderMenu()
         {
             ImGui::PushID(i);
             ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::ColorEdit4("Color", &pRender->lights->pointL[i]->color[0]);
+            ImGui::ColorEdit3("Color", &pRender->lights->pointL[i]->color[0]);
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -260,7 +262,7 @@ void Renderer::renderMenu()
             ImGui::PushID(i);
             ImGui::DragFloat3("Position", &pRender->lights->directL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::DragFloat3("Direction", &pRender->lights->directL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::ColorEdit4("Color", &pRender->lights->directL[i]->color[0]);
+            ImGui::ColorEdit3("Color", &pRender->lights->directL[i]->color[0]);
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -297,7 +299,7 @@ void Renderer::renderMenu()
             ImGui::PushID(i);
             ImGui::DragFloat3("Position", &pRender->lights->spotL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::DragFloat3("Direction", &pRender->lights->spotL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::ColorEdit4("Color", &pRender->lights->spotL[i]->color[0]);
+            ImGui::ColorEdit3("Color", &pRender->lights->spotL[i]->color[0]);
             ImGui::DragFloat("Cut Off", &pRender->lights->spotL[i]->cutoff, 0.1f, 0.0f, 0.0f, "%.2f");
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
@@ -346,16 +348,15 @@ void Renderer::renderScene()
     {
         manager->myCamera->update(ImGui::GetIO().Framerate, false);
         glm::mat4 view = manager->myCamera->GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)pRender->window_w/(float)pRender->window_h, 0.1f, 1000.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)pRender->window_w/(float)pRender->window_h, pRender->sight_near, pRender->sight_far);
         glm::mat4 model(1.0f);
         model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
         myShader->use();
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
+        glUniform3fv(glGetUniformLocation(myShader->programID, "viewPos"), 1, &manager->myCamera->Position[0]);
         pRender->lights->bind(myShader->programID);
-
         myModel->draw(myShader->programID);
         myShader->disuse();
 

@@ -30,6 +30,8 @@ struct RENDER_CONFIG
     ImVec4 menu_text_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
     glm::vec4 background_color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     float window_alpha = 0.8f;
+    float sight_near = 0.1f;
+    float sight_far = 1000.0f;
     bool line_mode = false;
     int window_w = 100;
     int window_h = 100;

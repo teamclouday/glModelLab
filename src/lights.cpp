@@ -67,10 +67,10 @@ void Lights::loadShader()
              << "                                   vec3( 1.0f,  1.0f,  1.0f),\n"
              << "                                   vec3(-1.0f,  1.0f,  1.0f),\n"
              << "                                   vec3( 1.0f, -1.0f,  1.0f));\n"
-             << "uniform vec4 light_color;\n"
+             << "uniform vec3 light_color;\n"
              << "uniform mat4 mvp;\n"
              << "out VS_OUT{\n"
-             << "vec4 color;\n"
+             << "vec3 color;\n"
              << "} vs_out;\n"
              << "void main(){\n"
              << "gl_Position = mvp * vec4(vertices[gl_VertexID], 1.0);\n"
@@ -86,10 +86,10 @@ void Lights::loadShader()
     fragSSTR << "#version 330 core\n"
              << "out vec4 color;\n"
              << "in VS_OUT{\n"
-             << "vec4 color;\n"
+             << "vec3 color;\n"
              << "} fs_in;\n"
              << "void main(){\n"
-             << "color = fs_in.color;\n"
+             << "color = vec4(fs_in.color, 1.0);\n"
              << "}\n";
     std::string fragSourceStr = fragSSTR.str();
     const char *fragSource = fragSourceStr.c_str();
@@ -108,7 +108,7 @@ void Lights::loadShader()
     glDeleteShader(fragShader);
 }
 
-void Lights::addDirectLight(const glm::vec3& position, const glm::vec3& direction, const glm::vec4& color)
+void Lights::addDirectLight(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& color)
 {
     if(this->directL.size() == MAX_LIGHTS)
         return;
@@ -119,7 +119,7 @@ void Lights::addDirectLight(const glm::vec3& position, const glm::vec3& directio
     this->directL.push_back(newLight);
 }
 
-void Lights::addPointLight(const glm::vec3& position, const glm::vec4& color)
+void Lights::addPointLight(const glm::vec3& position, const glm::vec3& color)
 {
     if(this->pointL.size() == MAX_LIGHTS)
         return;
@@ -129,7 +129,7 @@ void Lights::addPointLight(const glm::vec3& position, const glm::vec4& color)
     this->pointL.push_back(newLight);
 }
 
-void Lights::addSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec4& color)
+void Lights::addSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color)
 {
     if(this->spotL.size() == MAX_LIGHTS)
         return;
@@ -150,7 +150,7 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
         glm::mat4 model(1.0f);
         model = glm::scale(model, glm::vec3(this->modelScale));
         model = glm::translate(model, pointL[i]->position);
-        glUniform4fv(glGetUniformLocation(this->programID, "light_color"), 1, &pointL[i]->color[0]);
+        glUniform3fv(glGetUniformLocation(this->programID, "light_color"), 1, &pointL[i]->color[0]);
         glUniformMatrix4fv(glGetUniformLocation(this->programID, "mvp"), 1, GL_FALSE, glm::value_ptr(perspective * view * model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
@@ -159,7 +159,7 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
         glm::mat4 model(1.0f);
         model = glm::scale(model, glm::vec3(this->modelScale));
         model = glm::translate(model, directL[i]->position);
-        glUniform4fv(glGetUniformLocation(this->programID, "light_color"), 1, &directL[i]->color[0]);
+        glUniform3fv(glGetUniformLocation(this->programID, "light_color"), 1, &directL[i]->color[0]);
         glUniformMatrix4fv(glGetUniformLocation(this->programID, "mvp"), 1, GL_FALSE, glm::value_ptr(perspective * view * model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
@@ -168,7 +168,7 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
         glm::mat4 model(1.0f);
         model = glm::scale(model, glm::vec3(this->modelScale));
         model = glm::translate(model, spotL[i]->position);
-        glUniform4fv(glGetUniformLocation(this->programID, "light_color"), 1, &spotL[i]->color[0]);
+        glUniform3fv(glGetUniformLocation(this->programID, "light_color"), 1, &spotL[i]->color[0]);
         glUniformMatrix4fv(glGetUniformLocation(this->programID, "mvp"), 1, GL_FALSE, glm::value_ptr(perspective * view * model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
@@ -176,12 +176,12 @@ void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
     glBindVertexArray(0);
 }
 
-void Lights::bind(GLuint programID)
+void Lights::bind(GLuint program)
 {
-    GLuint ID = glGetUniformBlockIndex(programID, "LIGHTS");
+    GLuint ID = glGetUniformBlockIndex(program, "LIGHTS");
     if(ID == GL_INVALID_INDEX)
         return;
-    glUniformBlockBinding(programID, ID, 2);
+    glUniformBlockBinding(program, ID, 2);
     glBindBufferBase(GL_UNIFORM_BUFFER, 2, this->UBO);
     glBindBuffer(GL_UNIFORM_BUFFER, this->UBO);
     // map point lights first
@@ -207,7 +207,7 @@ void Lights::bind(GLuint programID)
     glUnmapBuffer(GL_UNIFORM_BUFFER);
     // glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    glUniform1i(glGetUniformLocation(programID, "NUM_POINTL"), (GLint)this->pointL.size());
-    glUniform1i(glGetUniformLocation(programID, "NUM_DIRECTL"), (GLint)this->directL.size());
-    glUniform1i(glGetUniformLocation(programID, "NUM_SPOTL"), (GLint)this->spotL.size());
+    glUniform1i(glGetUniformLocation(program, "NUM_POINTL"), (GLint)this->pointL.size());
+    glUniform1i(glGetUniformLocation(program, "NUM_DIRECTL"), (GLint)this->directL.size());
+    glUniform1i(glGetUniformLocation(program, "NUM_SPOTL"), (GLint)this->spotL.size());
 }
