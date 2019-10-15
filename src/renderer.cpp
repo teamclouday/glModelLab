@@ -228,7 +228,7 @@ void Renderer::renderMenu()
             ImGui::PushID(i);
             ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::ColorEdit3("Color", &pRender->lights->pointL[i]->color[0]);
-            ImGui::DragFloat("Att Coeff", &pRender->lights->pointL[i]->attenuation, 0.0001f, 0.0f, 1.0f, "%.4f");
+            ImGui::DragFloat("Attenuation", &pRender->lights->pointL[i]->attenuation, 0.0001f, 0.0f, 1.0f, "%.4f");
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -266,6 +266,7 @@ void Renderer::renderMenu()
             ImGui::DragFloat3("Position", &pRender->lights->directL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::DragFloat3("Direction", &pRender->lights->directL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::ColorEdit3("Color", &pRender->lights->directL[i]->color[0]);
+            ImGui::Checkbox("Follow Camera", (bool*)&pRender->lights->directLFollow[i]);
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -282,6 +283,7 @@ void Renderer::renderMenu()
         {
             delete pRender->lights->directL[toRemove[i]];
             pRender->lights->directL.erase(pRender->lights->directL.begin()+toRemove[i]);
+            pRender->lights->directLFollow.erase(pRender->lights->directLFollow.begin()+toRemove[i]);
         }
         ImGui::PopFont();
         ImGui::End();
@@ -303,7 +305,10 @@ void Renderer::renderMenu()
             ImGui::DragFloat3("Position", &pRender->lights->spotL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::DragFloat3("Direction", &pRender->lights->spotL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::ColorEdit3("Color", &pRender->lights->spotL[i]->color[0]);
-            ImGui::DragFloat("Cut Off", &pRender->lights->spotL[i]->cutoff, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat("CutOff(inner)", &pRender->lights->spotL[i]->cutoff, 0.1f, 0.0f, 50.0f, "%.2f");
+            ImGui::DragFloat("CutOff(Outer)", &pRender->lights->spotL[i]->cutoff2, 0.1f, 0.0f, 50.0f, "%.2f");
+            ImGui::DragFloat("Attenuation", &pRender->lights->spotL[i]->attenuation, 0.0001f, 0.0f, 1.0f, "%.4f");
+            ImGui::Checkbox("Follow Camera", (bool*)&pRender->lights->spotLFollow[i]);
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -320,6 +325,7 @@ void Renderer::renderMenu()
         {
             delete pRender->lights->spotL[toRemove[i]];
             pRender->lights->spotL.erase(pRender->lights->spotL.begin()+toRemove[i]);
+            pRender->lights->spotLFollow.erase(pRender->lights->spotLFollow.begin()+toRemove[i]);
         }
         ImGui::PopFont();
         ImGui::End();
@@ -346,6 +352,24 @@ void Renderer::renderScene()
 
     Shader *myShader = this->myRenderConfig->shader;
     Model *myModel = this->myRenderConfig->model;
+
+    for(unsigned i = 0; i < pRender->lights->directLFollow.size(); i++)
+    {
+        if(pRender->lights->directLFollow[i])
+        {
+            pRender->lights->directL[i]->position = manager->myCamera->Position;
+            pRender->lights->directL[i]->direction = manager->myCamera->Front;
+        }
+    }
+
+    for(unsigned i = 0; i < pRender->lights->spotLFollow.size(); i++)
+    {
+        if(pRender->lights->spotLFollow[i])
+        {
+            pRender->lights->spotL[i]->position = manager->myCamera->Position;
+            pRender->lights->spotL[i]->direction = manager->myCamera->Front;
+        }
+    }
 
     if(myShader && myModel)
     {

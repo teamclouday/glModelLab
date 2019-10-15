@@ -117,6 +117,7 @@ void Lights::addDirectLight(const glm::vec3& position, const glm::vec3& directio
     newLight->direction = direction;
     newLight->position = position;
     this->directL.push_back(newLight);
+    this->directLFollow.push_back(0);
 }
 
 void Lights::addPointLight(const glm::vec3& position, float att, const glm::vec3& color)
@@ -130,16 +131,19 @@ void Lights::addPointLight(const glm::vec3& position, float att, const glm::vec3
     this->pointL.push_back(newLight);
 }
 
-void Lights::addSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color)
+void Lights::addSpotLight(const glm::vec3& position, float att, const glm::vec3& direction, float cutoff, const glm::vec3& color, float cutoff2)
 {
     if(this->spotL.size() == MAX_LIGHTS)
         return;
     SpotLight *newLight = new SpotLight;
     newLight->position = position;
+    newLight->attenuation = att;
     newLight->direction = direction;
     newLight->cutoff = cutoff;
     newLight->color = color;
+    newLight->cutoff2 = cutoff2;
     this->spotL.push_back(newLight);
+    this->spotLFollow.push_back(0);
 }
 
 void Lights::drawLights(glm::mat4& view, glm::mat4& perspective)
