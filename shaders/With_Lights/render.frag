@@ -61,9 +61,14 @@ vec3 calcSpotL(int index, vec3 originalColor);
 
 void main()
 {
-    vec3 result = vec3(texture(material.texture_diffuse1, fs_in.texCoords));
+    vec4 originalColor = vec4(texture(material.texture_diffuse1, fs_in.texCoords));
+    vec3 result = vec3(originalColor);
+    float alpha = originalColor.a;
     if(material_exists < 0.5)
+    {
         result = vec3(0.4, 0.5, 0.6);
+        alpha = 1.0;
+    }
     if(NUM_DIRECTL > 0 || NUM_POINTL > 0 || NUM_SPOTL > 0)
     {
         vec3 newColor = vec3(0.0, 0.0, 0.0);
@@ -75,7 +80,7 @@ void main()
             newColor += calcSpotL(i, result);
         result = newColor;
     }
-    color = vec4(result, 1.0);
+    color = vec4(result, alpha);
 }
 
 vec3 calcDirectL(int index, vec3 originalColor)
