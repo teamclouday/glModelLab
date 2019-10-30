@@ -20,13 +20,13 @@ public:
     ShadowMap();
     ~ShadowMap();
 
-    void bind();
+    void bind(glm::mat4& model);
     void unbind();
 
     void texBind();
     void texUnbind();
 
-    bool enabled;
+    glm::vec3 &lightPos;
     GLuint programID;
 
 private:

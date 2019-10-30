@@ -43,6 +43,7 @@ struct RENDER_CONFIG
     Lights *lights = nullptr;
     ShadowMap *shadow = nullptr;
     glm::vec3 model_pos = glm::vec3(0.0f);
+    bool update_shadow = false;
 };
 
 struct MENU_CONFIG

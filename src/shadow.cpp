@@ -2,7 +2,7 @@
 
 ShadowMap::ShadowMap()
 {
-    this->enabled = false;
+    this->lightPos = glm::vec3(1.0);
 
     this->createShader();
 
@@ -73,12 +73,18 @@ void ShadowMap::createShader()
     glDeleteShader(vertShader);
 }
 
-void ShadowMap::bind()
+void ShadowMap::bind(glm::mat4& model)
 {
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
     glUseProgram(this->programID);
     glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
     glClear(GL_DEPTH_BUFFER_BIT);
+
+    glm::mat4 lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+    glm::mat4 lightView = glm::lookAt(this->lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 lightMat = lightProj * lightView;
+    glUniformMatrix4fv(glGetUniformLocation(this->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(this->programID, "lightProj"), 1, GL_FALSE, glm::value_ptr(lightMat));
 }
 
 void ShadowMap::unbind()

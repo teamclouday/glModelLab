@@ -18,6 +18,8 @@ Renderer::~Renderer()
         delete this->myRenderConfig->model;
     if(this->myRenderConfig->shader)
         delete this->myRenderConfig->shader;
+    if(this->myRenderConfig->shadow)
+        delete this->myRenderConfig->shadow;
     delete this->myRenderConfig;
     delete this->myMenuConfig;
 }
@@ -159,8 +161,10 @@ void Renderer::renderMenu()
         ImGui::DragFloat("View Sight Near", &pRender->sight_near, 0.0001f, 0.0001f, 1.0f, "%.4f");
         ImGui::DragFloat("View Sight Far", &pRender->sight_far, 0.1f, 100.0f, 10000.0f, "%.4f");
         ImGui::DragFloat("Light Source Scale", &pRender->lights->modelScale, 0.001f, 0.0f, 1.0f, "%.3f");
-        ImGui::DragFloat("Model Scale", &manager->myCamera->mv_zoom, 0.001f, 0.001f, 5.0f, "%.3f");
-        ImGui::DragFloat3("Model Position", &pRender->model_pos[0], 0.1f, 0.0f, 0.0f, "%.2f");
+        if(ImGui::DragFloat("Model Scale", &manager->myCamera->mv_zoom, 0.001f, 0.001f, 5.0f, "%.3f"))
+            pRender->update_shadow = true;
+        if(ImGui::DragFloat3("Model Position", &pRender->model_pos[0], 0.1f, 0.0f, 0.0f, "%.2f"))
+            pRender->update_shadow = true;
         ImGui::PopFont();
         ImGui::End();
         ImGui::PopFont();
@@ -227,9 +231,18 @@ void Renderer::renderMenu()
         for(unsigned i = 0; i < pRender->lights->pointL.size(); i++)
         {
             ImGui::PushID(i);
-            ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
+            if(ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f"))
+                pRender->update_shadow = true;
             ImGui::ColorEdit3("Color", &pRender->lights->pointL[i]->color[0]);
             ImGui::DragFloat("Attenuation", &pRender->lights->pointL[i]->attenuation, 0.0001f, 0.0f, 1.0f, "%.4f");
+            if(!pRender->update_shadow)
+            {
+                if(ImGui::Checkbox("Gen Shadow", NULL))
+                {
+                    pRender->shadow->lightPos = pRender->lights->pointL[i]->position;
+                    pRender->update_shadow = true;
+                }
+            }
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -264,10 +277,19 @@ void Renderer::renderMenu()
         for(unsigned i = 0; i < pRender->lights->directL.size(); i++)
         {
             ImGui::PushID(i);
-            ImGui::DragFloat3("Position", &pRender->lights->directL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f");
+            if(ImGui::DragFloat3("Position", &pRender->lights->directL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f"))
+                pRender->update_shadow = true;
             ImGui::DragFloat3("Direction", &pRender->lights->directL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::ColorEdit3("Color", &pRender->lights->directL[i]->color[0]);
             ImGui::Checkbox("Follow Camera", (bool*)&pRender->lights->directLFollow[i]);
+            if(!pRender->update_shadow)
+            {
+                if(ImGui::Checkbox("Gen Shadow", NULL))
+                {
+                    pRender->shadow->lightPos = pRender->lights->directL[i]->position;
+                    pRender->update_shadow = true;
+                }
+            }
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -343,6 +365,20 @@ void Renderer::renderScene()
     ImGui::NewFrame();
 
     SDL_GetWindowSize(manager->myWindow, &pRender->window_w, &pRender->window_h);
+
+    Shader *myShader = this->myRenderConfig->shader;
+    Model *myModel = this->myRenderConfig->model;
+
+    if(myShader && myModel && pRender->update_shadow)
+    {
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, pRender->model_pos);
+        model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
+        pRender->shadow->bind(model);
+        myModel->draw(pRender->shadow->programID);
+        pRender->shadow->unbind();
+    }
+
     glViewport(0, 0, pRender->window_w, pRender->window_h);
     glClearColor(this->myRenderConfig->background_color.x,
                  this->myRenderConfig->background_color.y,
@@ -350,9 +386,6 @@ void Renderer::renderScene()
                  this->myRenderConfig->background_color.w);
     glClearDepth(1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    Shader *myShader = this->myRenderConfig->shader;
-    Model *myModel = this->myRenderConfig->model;
 
     for(unsigned i = 0; i < pRender->lights->directLFollow.size(); i++)
     {
