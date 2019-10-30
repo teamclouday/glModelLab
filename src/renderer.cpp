@@ -8,6 +8,7 @@ Renderer::Renderer()
     this->myRenderConfig = new RENDER_CONFIG();
     this->myMenuConfig = new MENU_CONFIG();
     this->myRenderConfig->lights = new Lights();
+    this->myRenderConfig->shadow = new ShadowMap();
 }
 
 Renderer::~Renderer()

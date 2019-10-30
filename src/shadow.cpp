@@ -2,6 +2,8 @@
 
 ShadowMap::ShadowMap()
 {
+    this->enabled = false;
+
     this->createShader();
 
     glGenFramebuffers(1, &this->FBO);
@@ -32,7 +34,23 @@ void ShadowMap::createShader()
 {
     std::stringstream sstr;
     sstr << "#version 330 core\n"
-         << "out FragColor;\n"
+         << "layout (location = 0) in vec3 position;\n"
+         << "uniform mat4 lightProj;\n"
+         << "uniform mat4 model;\n"
+         << "void main()\n"
+         << "{\n"
+         << "gl_Position = lightProj * model * vec4(position, 1.0);\n"
+         << "}\n";
+    std::string vertShaderStr = sstr.str();
+    const char *vertShaderSrc = vertShaderStr.c_str();
+    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertShader, 1, &vertShaderSrc, NULL);
+    glCompileShader(vertShader);
+
+    sstr.str(std::string());
+    sstr.clear();
+    sstr << "#version 330 core\n"
+         << "out vec4 FragColor;\n"
          << "in vec2 TexCoords;\n"
          << "uniform sampler2D depthMap;\n"
          << "void main()\n"
@@ -40,23 +58,25 @@ void ShadowMap::createShader()
          << "float depthVal = texture(depthMap, TexCoords).r;\n"
          << "FragColor = vec4(vec3(depthVal), 1.0);\n"
          << "}\n";
-    std::string shaderStr = sstr.str();
-    const char *shaderSrc = shaderStr.c_str();
-    GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(shader, 1, &shaderSrc, NULL);
-    glCompileShader(shader);
+    std::string fragShaderStr = sstr.str();
+    const char *fragShaderSrc = fragShaderStr.c_str();
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragShader, 1, &fragShaderSrc, NULL);
+    glCompileShader(fragShader);
 
-    if(this->programID)
-        glDeleteProgram(this->programID);
     this->programID = glCreateProgram();
-    glAttachShader(this->programID, shader);
+    glAttachShader(this->programID, fragShader);
+    glAttachShader(this->programID, vertShader);
     glLinkProgram(this->programID);
-    glDeleteShader(shader);
+
+    glDeleteShader(fragShader);
+    glDeleteShader(vertShader);
 }
 
 void ShadowMap::bind()
 {
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glUseProgram(this->programID);
     glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
     glClear(GL_DEPTH_BUFFER_BIT);
 }
@@ -64,6 +84,7 @@ void ShadowMap::bind()
 void ShadowMap::unbind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glUseProgram(0);
 }
 
 void ShadowMap::texBind()

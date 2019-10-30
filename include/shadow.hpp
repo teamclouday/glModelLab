@@ -8,6 +8,8 @@
 
 #include <sstream>
 #include <string>
+#include <iostream>
+#include <vector>
 
 #define SHADOW_WIDTH    1024
 #define SHADOW_HEIGHT   1024
@@ -24,10 +26,12 @@ public:
     void texBind();
     void texUnbind();
 
+    bool enabled;
+    GLuint programID;
+
 private:
     GLuint FBO;
     GLuint depthTex;
-    GLuint programID;
 
     void createShader();
 };

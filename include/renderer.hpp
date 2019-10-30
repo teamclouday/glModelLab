@@ -23,6 +23,7 @@
 #include "model.hpp"
 #include "shader.hpp"
 #include "lights.hpp"
+#include "shadow.hpp"
 
 struct RENDER_CONFIG
 {
@@ -40,6 +41,7 @@ struct RENDER_CONFIG
     Model *model = nullptr;
     Shader *shader = nullptr;
     Lights *lights = nullptr;
+    ShadowMap *shadow = nullptr;
     glm::vec3 model_pos = glm::vec3(0.0f);
 };
 
