@@ -57,7 +57,6 @@ uniform int NUM_DIRECTL = 0;
 uniform int NUM_SPOTL   = 0;
 
 uniform float shadow_enabled = 0.0;
-uniform mat4 lightMat;
 uniform sampler2D depthMap;
 
 vec3 calcDirectL(int index, vec3 originalColor);
@@ -114,8 +113,8 @@ vec3 calcPointL(int index, vec3 originalColor)
     float dis = length(lights.pointL[index].position - fs_in.fragPos);
     float att = 1.0 / (1.0 + dis*dis*lights.pointL[index].coeff);
     vec3 result = 0.05 * originalColor;
-    result += shadow * att * 0.5 * lights.pointL[index].color * diff * originalColor;
-    result += shadow * att * 0.9 * lights.pointL[index].color * spec * originalColor;
+    result += att * 0.5 * lights.pointL[index].color * diff * originalColor;
+    result += att * 0.9 * lights.pointL[index].color * spec * originalColor;
     return result;
 }
 
@@ -143,6 +142,6 @@ void calcShadow()
     float closestDepth = texture(depthMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
     shadow = currentDepth - 0.005 > closestDepth ? 0.0 : 1.0;
-    if(projCoords.z > 1.0)
-        shadow = 1.0;
+    // if(texture(depthMap, fs_in.shadowCoords.xy).z < fs_in.shadowCoords.z)
+    //     shadow = 0.0;
 }

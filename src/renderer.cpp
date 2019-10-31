@@ -372,7 +372,7 @@ void Renderer::renderScene()
         model = glm::translate(model, pRender->model_pos);
         model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
         glm::vec3 lightPos = (pRender->shadow->pointer[0] > 0) ? pRender->lights->directL[pRender->shadow->pointer[1]]->position : pRender->lights->pointL[pRender->shadow->pointer[1]]->position;
-        pRender->shadow->bind(model, lightPos);
+        pRender->shadow->bind(model, lightPos, pRender->lights->directL[pRender->shadow->pointer[1]]->direction);
         myModel->draw(pRender->shadow->programID);
         pRender->shadow->unbind();
         pRender->update_shadow = false;
@@ -424,7 +424,7 @@ void Renderer::renderScene()
             glActiveTexture(GL_TEXTURE0);
             pRender->shadow->texBind();
             glUniform1f(glGetUniformLocation(myShader->programID, "shadow_enabled"), 1.0f);
-            glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "depthMVP"), 1, GL_FALSE, glm::value_ptr(biasMat * pRender->shadow->lightMat));
+            glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "lightMat"), 1, GL_FALSE, glm::value_ptr(pRender->shadow->lightMat));
         }
         else
             glUniform1f(glGetUniformLocation(myShader->programID, "shadow_enabled"), 0.0f);
