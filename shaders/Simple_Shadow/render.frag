@@ -6,7 +6,7 @@ struct Material
 };
 
 uniform Material material;
-uniform float material_exists;
+uniform float material_exists = 0.0;
 
 in VS_OUT
 {
@@ -14,6 +14,7 @@ in VS_OUT
     vec3 normal;
     vec3 fragPos;
     vec3 viewPos;
+    vec4 shadowCoords;
 } fs_in;
 
 layout (location = 0) out vec4 color;
@@ -55,23 +56,24 @@ uniform int NUM_POINTL  = 0;
 uniform int NUM_DIRECTL = 0;
 uniform int NUM_SPOTL   = 0;
 
-uniform float shadow_enabled;
+uniform float shadow_enabled = 0.0;
 uniform mat4 lightMat;
 uniform sampler2D depthMap;
 
 vec3 calcDirectL(int index, vec3 originalColor);
 vec3 calcPointL(int index, vec3 originalColor);
 vec3 calcSpotL(int index, vec3 originalColor);
-float calcShadow();
+void calcShadow();
+
+float shadow = 1.0;
 
 void main()
 {
     vec4 originalColor = vec4(texture(material.texture_diffuse1, fs_in.texCoords));
     vec3 result = vec3(originalColor);
     float alpha = originalColor.a;
-    float shadow = 1.0;
     if(shadow_enabled > 0.5)
-        shadow = calcShadow();
+        calcShadow();
     if(material_exists < 0.5)
     {
         result = vec3(0.4, 0.5, 0.6);
@@ -88,7 +90,7 @@ void main()
             newColor += calcSpotL(i, result);
         result = newColor;
     }
-    color = shadow * vec4(result, alpha);
+    color = vec4(result, alpha);
 }
 
 vec3 calcDirectL(int index, vec3 originalColor)
@@ -98,8 +100,8 @@ vec3 calcDirectL(int index, vec3 originalColor)
     vec3 reflectDir = reflect(-lightDir, fs_in.normal);
     float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
     vec3 result = 0.05 * originalColor;
-    result += 0.6 * lights.directL[index].color * diff * originalColor;
-    result += 0.9 * lights.directL[index].color * spec * originalColor;
+    result += shadow * 0.6 * lights.directL[index].color * diff * originalColor;
+    result += shadow * 0.9 * lights.directL[index].color * spec * originalColor;
     return result;
 }
 
@@ -112,8 +114,8 @@ vec3 calcPointL(int index, vec3 originalColor)
     float dis = length(lights.pointL[index].position - fs_in.fragPos);
     float att = 1.0 / (1.0 + dis*dis*lights.pointL[index].coeff);
     vec3 result = 0.05 * originalColor;
-    result += att * 0.5 * lights.pointL[index].color * diff * originalColor;
-    result += att * 0.9 * lights.pointL[index].color * spec * originalColor;
+    result += shadow * att * 0.5 * lights.pointL[index].color * diff * originalColor;
+    result += shadow * att * 0.9 * lights.pointL[index].color * spec * originalColor;
     return result;
 }
 
@@ -134,12 +136,13 @@ vec3 calcSpotL(int index, vec3 originalColor)
     return result;
 }
 
-float calcShadow()
+void calcShadow()
 {
-    vec4 lightSpace = lightMat * vec4(fs_in.fragPos, 1.0);
-    vec3 projCoords = lightSpace.xyz / lightSpace.w * 0.5 + 0.5;
+    vec3 projCoords = fs_in.shadowCoords.xyz / fs_in.shadowCoords.w;
+    projCoords = projCoords * 0.5 + 0.5;
     float closestDepth = texture(depthMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
-    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
-    return shadow;
+    shadow = currentDepth - 0.005 > closestDepth ? 0.0 : 1.0;
+    if(projCoords.z > 1.0)
+        shadow = 1.0;
 }

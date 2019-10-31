@@ -7,6 +7,7 @@ layout (location = 2) in vec2 texCoords;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
+uniform mat4 depthMVP;
 uniform vec3 viewPos;
 
 out VS_OUT
@@ -15,6 +16,7 @@ out VS_OUT
     vec3 normal;
     vec3 fragPos;
     vec3 viewPos;
+    vec4 shadowCoords;
 } vs_out;
 
 void main()
@@ -24,4 +26,5 @@ void main()
     vs_out.normal = normal;
     vs_out.fragPos = vec3(model * vec4(position, 1.0));
     vs_out.viewPos = viewPos;
+    vs_out.shadowCoords = depthMVP * vec4(position, 1.0);
 }

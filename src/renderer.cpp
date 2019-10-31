@@ -161,9 +161,9 @@ void Renderer::renderMenu()
         ImGui::DragFloat("View Sight Near", &pRender->sight_near, 0.0001f, 0.0001f, 1.0f, "%.4f");
         ImGui::DragFloat("View Sight Far", &pRender->sight_far, 0.1f, 100.0f, 10000.0f, "%.4f");
         ImGui::DragFloat("Light Source Scale", &pRender->lights->modelScale, 0.001f, 0.0f, 1.0f, "%.3f");
-        if(ImGui::DragFloat("Model Scale", &manager->myCamera->mv_zoom, 0.001f, 0.001f, 5.0f, "%.3f"))
+        if(ImGui::DragFloat("Model Scale", &manager->myCamera->mv_zoom, 0.001f, 0.001f, 5.0f, "%.3f") && pRender->shadow->pointer[0] >= 0)
             pRender->update_shadow = true;
-        if(ImGui::DragFloat3("Model Position", &pRender->model_pos[0], 0.1f, 0.0f, 0.0f, "%.2f"))
+        if(ImGui::DragFloat3("Model Position", &pRender->model_pos[0], 0.1f, 0.0f, 0.0f, "%.2f") && pRender->shadow->pointer[0] >= 0)
             pRender->update_shadow = true;
         ImGui::PopFont();
         ImGui::End();
@@ -231,18 +231,10 @@ void Renderer::renderMenu()
         for(unsigned i = 0; i < pRender->lights->pointL.size(); i++)
         {
             ImGui::PushID(i);
-            if(ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f"))
-                pRender->update_shadow = true;
+            if(ImGui::DragFloat3("Position", &pRender->lights->pointL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f") && pRender->shadow->pointer[0] >= 0)
             ImGui::ColorEdit3("Color", &pRender->lights->pointL[i]->color[0]);
             ImGui::DragFloat("Attenuation", &pRender->lights->pointL[i]->attenuation, 0.0001f, 0.0f, 1.0f, "%.4f");
-            if(!pRender->update_shadow)
-            {
-                if(ImGui::Checkbox("Gen Shadow", NULL))
-                {
-                    pRender->shadow->lightPos = pRender->lights->pointL[i]->position;
-                    pRender->update_shadow = true;
-                }
-            }
+            static bool checked = (pRender->shadow->pointer[0] == 0 && pRender->shadow->pointer[1] == (int)i) ? true : false;
             if(ImGui::Button("Remove light", ImVec2(120.0f, 40.0f)))
                 toRemove.push_back(i);
             ImGui::Spacing();
@@ -277,16 +269,17 @@ void Renderer::renderMenu()
         for(unsigned i = 0; i < pRender->lights->directL.size(); i++)
         {
             ImGui::PushID(i);
-            if(ImGui::DragFloat3("Position", &pRender->lights->directL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f"))
+            if(ImGui::DragFloat3("Position", &pRender->lights->directL[i]->position[0], 0.1f, 0.0f, 0.0f, "%.2f") && pRender->shadow->pointer[0] >= 0)
                 pRender->update_shadow = true;
             ImGui::DragFloat3("Direction", &pRender->lights->directL[i]->direction[0], 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::ColorEdit3("Color", &pRender->lights->directL[i]->color[0]);
             ImGui::Checkbox("Follow Camera", (bool*)&pRender->lights->directLFollow[i]);
-            if(!pRender->update_shadow)
+            static bool checked = (pRender->shadow->pointer[0] == 1 && pRender->shadow->pointer[1] == (int)i) ? true : false;
+            if(ImGui::Checkbox("Gen Shadow", &checked))
             {
-                if(ImGui::Checkbox("Gen Shadow", NULL))
+                if(pRender->shadow->pointer[0] < 0)
                 {
-                    pRender->shadow->lightPos = pRender->lights->directL[i]->position;
+                    pRender->shadow->pointer = {1, (int)i};
                     pRender->update_shadow = true;
                 }
             }
@@ -307,6 +300,10 @@ void Renderer::renderMenu()
             delete pRender->lights->directL[toRemove[i]];
             pRender->lights->directL.erase(pRender->lights->directL.begin()+toRemove[i]);
             pRender->lights->directLFollow.erase(pRender->lights->directLFollow.begin()+toRemove[i]);
+            if(pRender->shadow->pointer[0] == 1 && pRender->shadow->pointer[1] == (int)toRemove[i])
+            {
+                pRender->shadow->pointer = {-1, -1};                
+            }
         }
         ImGui::PopFont();
         ImGui::End();
@@ -374,9 +371,11 @@ void Renderer::renderScene()
         glm::mat4 model(1.0f);
         model = glm::translate(model, pRender->model_pos);
         model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
-        pRender->shadow->bind(model);
+        glm::vec3 lightPos = (pRender->shadow->pointer[0] > 0) ? pRender->lights->directL[pRender->shadow->pointer[1]]->position : pRender->lights->pointL[pRender->shadow->pointer[1]]->position;
+        pRender->shadow->bind(model, lightPos);
         myModel->draw(pRender->shadow->programID);
         pRender->shadow->unbind();
+        pRender->update_shadow = false;
     }
 
     glViewport(0, 0, pRender->window_w, pRender->window_h);
@@ -414,6 +413,21 @@ void Renderer::renderScene()
         model = glm::translate(model, pRender->model_pos);
         model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
         myShader->use();
+        static glm::mat4 biasMat = glm::mat4(
+            0.5f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f
+        );
+        if(pRender->shadow->pointer[0] >= 0)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            pRender->shadow->texBind();
+            glUniform1f(glGetUniformLocation(myShader->programID, "shadow_enabled"), 1.0f);
+            glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "depthMVP"), 1, GL_FALSE, glm::value_ptr(biasMat * pRender->shadow->lightMat));
+        }
+        else
+            glUniform1f(glGetUniformLocation(myShader->programID, "shadow_enabled"), 0.0f);
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));

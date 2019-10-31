@@ -8,7 +8,6 @@
 
 #include <sstream>
 #include <string>
-#include <iostream>
 #include <vector>
 
 #define SHADOW_WIDTH    1024
@@ -20,14 +19,14 @@ public:
     ShadowMap();
     ~ShadowMap();
 
-    void bind(glm::mat4& model);
+    void bind(glm::mat4& model, glm::vec3& lightPos);
     void unbind();
 
     void texBind();
-    void texUnbind();
 
-    glm::vec3 &lightPos;
     GLuint programID;
+    std::vector<int> pointer;
+    glm::mat4 lightMat;
 
 private:
     GLuint FBO;

@@ -2,8 +2,7 @@
 
 ShadowMap::ShadowMap()
 {
-    this->lightPos = glm::vec3(1.0);
-
+    this->pointer = {-1, -1};
     this->createShader();
 
     glGenFramebuffers(1, &this->FBO);
@@ -19,7 +18,6 @@ ShadowMap::ShadowMap()
     glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->depthTex, 0);
     glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -35,11 +33,11 @@ void ShadowMap::createShader()
     std::stringstream sstr;
     sstr << "#version 330 core\n"
          << "layout (location = 0) in vec3 position;\n"
-         << "uniform mat4 lightProj;\n"
+         << "uniform mat4 lightMVP;\n"
          << "uniform mat4 model;\n"
          << "void main()\n"
          << "{\n"
-         << "gl_Position = lightProj * model * vec4(position, 1.0);\n"
+         << "gl_Position = lightMVP * vec4(position, 1.0);\n"
          << "}\n";
     std::string vertShaderStr = sstr.str();
     const char *vertShaderSrc = vertShaderStr.c_str();
@@ -50,13 +48,10 @@ void ShadowMap::createShader()
     sstr.str(std::string());
     sstr.clear();
     sstr << "#version 330 core\n"
-         << "out vec4 FragColor;\n"
-         << "in vec2 TexCoords;\n"
-         << "uniform sampler2D depthMap;\n"
+         << "out float depth;\n"
          << "void main()\n"
          << "{\n"
-         << "float depthVal = texture(depthMap, TexCoords).r;\n"
-         << "FragColor = vec4(vec3(depthVal), 1.0);\n"
+         << "depth = gl_FragCoord.z;\n"
          << "}\n";
     std::string fragShaderStr = sstr.str();
     const char *fragShaderSrc = fragShaderStr.c_str();
@@ -73,22 +68,29 @@ void ShadowMap::createShader()
     glDeleteShader(vertShader);
 }
 
-void ShadowMap::bind(glm::mat4& model)
+void ShadowMap::bind(glm::mat4& model, glm::vec3& lightPos)
 {
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
     glUseProgram(this->programID);
     glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-    glm::mat4 lightView = glm::lookAt(this->lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 lightMat = lightProj * lightView;
+    glm::mat4 lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 10.0f);
+    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->lightMat = lightProj * lightView;
+    glUniformMatrix4fv(glGetUniformLocation(this->programID, "lightMVP"), 1, GL_FALSE, glm::value_ptr(this->lightMat));
     glUniformMatrix4fv(glGetUniformLocation(this->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(glGetUniformLocation(this->programID, "lightProj"), 1, GL_FALSE, glm::value_ptr(lightMat));
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, this->depthTex);
+
+    glCullFace(GL_FRONT);
 }
 
 void ShadowMap::unbind()
 {
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(0);
 }
@@ -96,9 +98,4 @@ void ShadowMap::unbind()
 void ShadowMap::texBind()
 {
     glBindTexture(GL_TEXTURE_2D, this->depthTex);
-}
-
-void ShadowMap::texUnbind()
-{
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
