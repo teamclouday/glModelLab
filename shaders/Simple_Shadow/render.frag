@@ -64,7 +64,7 @@ vec3 calcPointL(int index, vec3 originalColor);
 vec3 calcSpotL(int index, vec3 originalColor);
 void calcShadow();
 
-float shadow = 1.0;
+float shadow = 0.0;
 
 void main()
 {
@@ -99,8 +99,8 @@ vec3 calcDirectL(int index, vec3 originalColor)
     vec3 reflectDir = reflect(-lightDir, fs_in.normal);
     float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
     vec3 result = 0.05 * originalColor;
-    result += shadow * 0.6 * lights.directL[index].color * diff * originalColor;
-    result += shadow * 0.9 * lights.directL[index].color * spec * originalColor;
+    result += (1.0-shadow) * 0.6 * lights.directL[index].color * diff * originalColor;
+    result += (1.0-shadow) * 0.9 * lights.directL[index].color * spec * originalColor;
     return result;
 }
 
@@ -139,9 +139,25 @@ void calcShadow()
 {
     vec3 projCoords = fs_in.shadowCoords.xyz / fs_in.shadowCoords.w;
     projCoords = projCoords * 0.5 + 0.5;
-    float closestDepth = texture(depthMap, projCoords.xy).r;
+    if(projCoords.z > 1.0)
+    {
+        shadow = 0.0;
+        return;
+    }
     float currentDepth = projCoords.z;
-    shadow = currentDepth - 0.005 > closestDepth ? 0.0 : 1.0;
-    // if(texture(depthMap, fs_in.shadowCoords.xy).z < fs_in.shadowCoords.z)
-    //     shadow = 0.0;
+    float bias = 0.0005;
+    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
+    for(int x = -1; x <= 1; x++)
+    {
+        for(int y = -1; y <= 1; y++)
+        {
+            float pcf = texture(depthMap, projCoords.xy + vec2(x, y)*texelSize).r;
+            shadow += currentDepth - bias > pcf ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+
+    // float closestDepth = texture(depthMap, projCoords.xy).r;
+    // float currentDepth = projCoords.z;
+    // shadow = currentDepth - 0.005 > closestDepth ? 1.0 : 0.0;
 }

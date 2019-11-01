@@ -366,18 +366,6 @@ void Renderer::renderScene()
     Shader *myShader = this->myRenderConfig->shader;
     Model *myModel = this->myRenderConfig->model;
 
-    if(myShader && myModel && pRender->update_shadow)
-    {
-        glm::mat4 model(1.0f);
-        model = glm::translate(model, pRender->model_pos);
-        model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
-        glm::vec3 lightPos = (pRender->shadow->pointer[0] > 0) ? pRender->lights->directL[pRender->shadow->pointer[1]]->position : pRender->lights->pointL[pRender->shadow->pointer[1]]->position;
-        pRender->shadow->bind(model, lightPos, pRender->lights->directL[pRender->shadow->pointer[1]]->direction);
-        myModel->draw(pRender->shadow->programID);
-        pRender->shadow->unbind();
-        pRender->update_shadow = false;
-    }
-
     glViewport(0, 0, pRender->window_w, pRender->window_h);
     glClearColor(this->myRenderConfig->background_color.x,
                  this->myRenderConfig->background_color.y,
@@ -413,15 +401,10 @@ void Renderer::renderScene()
         model = glm::translate(model, pRender->model_pos);
         model = glm::scale(model, glm::vec3(manager->myCamera->mv_zoom));
         myShader->use();
-        static glm::mat4 biasMat = glm::mat4(
-            0.5f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.5f, 0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f
-        );
         if(pRender->shadow->pointer[0] >= 0)
         {
-            glActiveTexture(GL_TEXTURE0);
+            glActiveTexture(GL_TEXTURE0+10);
+            glUniform1i(glGetUniformLocation(myShader->programID, "depthMap"), 10);
             pRender->shadow->texBind();
             glUniform1f(glGetUniformLocation(myShader->programID, "shadow_enabled"), 1.0f);
             glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "lightMat"), 1, GL_FALSE, glm::value_ptr(pRender->shadow->lightMat));
@@ -437,6 +420,14 @@ void Renderer::renderScene()
         myShader->disuse();
 
         pRender->lights->drawLights(view, projection);
+
+        if(pRender->shadow->pointer[0] > 0)
+        {
+            pRender->shadow->bind(pRender->lights->directL[pRender->shadow->pointer[1]]->position, pRender->lights->directL[pRender->shadow->pointer[1]]->direction);
+            myModel->draw(pRender->shadow->programID);
+            pRender->shadow->unbind();
+        }
+
     }
 
     this->renderMenu();
