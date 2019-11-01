@@ -83,12 +83,12 @@ void ShadowMap::bind(glm::mat4& model, glm::vec3& lightPos, glm::vec3& lightDir)
     glUniformMatrix4fv(glGetUniformLocation(this->programID, "lightMat"), 1, GL_FALSE, glm::value_ptr(this->lightMat));
     glUniformMatrix4fv(glGetUniformLocation(this->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-    glCullFace(GL_FRONT);
+    // glCullFace(GL_FRONT);
 }
 
 void ShadowMap::unbind()
 {
-    glCullFace(GL_BACK);
+    // glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(0);
 }
