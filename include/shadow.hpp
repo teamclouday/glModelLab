@@ -19,7 +19,7 @@ public:
     ShadowMap();
     ~ShadowMap();
 
-    void bind(glm::vec3& lightPos, glm::vec3& lightDir);
+    void bind(glm::mat4& model, glm::vec3& lightPos, glm::vec3& lightDir);
     void unbind();
 
     void texBind();

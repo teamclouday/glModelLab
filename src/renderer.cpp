@@ -423,7 +423,7 @@ void Renderer::renderScene()
 
         if(pRender->shadow->pointer[0] > 0)
         {
-            pRender->shadow->bind(pRender->lights->directL[pRender->shadow->pointer[1]]->position, pRender->lights->directL[pRender->shadow->pointer[1]]->direction);
+            pRender->shadow->bind(model, pRender->lights->directL[pRender->shadow->pointer[1]]->position, pRender->lights->directL[pRender->shadow->pointer[1]]->direction);
             myModel->draw(pRender->shadow->programID);
             pRender->shadow->unbind();
         }
