@@ -147,15 +147,15 @@ void calcShadow()
     float currentDepth = projCoords.z;
     float bias = 0.0005;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
-    for(int x = -1; x <= 1; x++)
+    for(int x = -2; x <= 2; x++)
     {
-        for(int y = -1; y <= 1; y++)
+        for(int y = -2; y <= 2; y++)
         {
             float pcf = texture(depthMap, projCoords.xy + vec2(x, y)*texelSize).r;
             shadow += currentDepth - bias > pcf ? 1.0 : 0.0;
         }
     }
-    shadow /= 9.0;
+    shadow /= 25.0;
 
     // float closestDepth = texture(depthMap, projCoords.xy).r;
     // float currentDepth = projCoords.z;

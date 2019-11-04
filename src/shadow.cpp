@@ -77,18 +77,20 @@ void ShadowMap::bind(glm::mat4& model, glm::vec3& lightPos, glm::vec3& lightDir)
     glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 1000.0f);
+    glm::mat4 lightProj = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 1000.0f);
     glm::mat4 lightView = glm::lookAt(lightPos, lightPos + lightDir, glm::vec3(0.0f, 1.0f, 0.0f));
     this->lightMat = lightProj * lightView;
     glUniformMatrix4fv(glGetUniformLocation(this->programID, "lightMat"), 1, GL_FALSE, glm::value_ptr(this->lightMat));
     glUniformMatrix4fv(glGetUniformLocation(this->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-    // glCullFace(GL_FRONT);
+    glCullFace(GL_FRONT);
+    glEnable(GL_POLYGON_OFFSET_FILL);
 }
 
 void ShadowMap::unbind()
 {
-    // glCullFace(GL_BACK);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(0);
 }
