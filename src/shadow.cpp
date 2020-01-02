@@ -72,6 +72,7 @@ void ShadowMap::createShader()
 
 void ShadowMap::bind(glm::mat4& model, glm::vec3& lightPos, glm::vec3& lightDir)
 {
+    glCullFace(GL_FRONT);
     glUseProgram(this->programID);
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
@@ -83,16 +84,15 @@ void ShadowMap::bind(glm::mat4& model, glm::vec3& lightPos, glm::vec3& lightDir)
     glUniformMatrix4fv(glGetUniformLocation(this->programID, "lightMat"), 1, GL_FALSE, glm::value_ptr(this->lightMat));
     glUniformMatrix4fv(glGetUniformLocation(this->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-    glCullFace(GL_FRONT);
     glEnable(GL_POLYGON_OFFSET_FILL);
 }
 
 void ShadowMap::unbind()
 {
     glDisable(GL_POLYGON_OFFSET_FILL);
-    glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(0);
+    glCullFace(GL_BACK);
 }
 
 void ShadowMap::texBind()

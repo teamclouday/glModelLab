@@ -145,17 +145,18 @@ void calcShadow()
         return;
     }
     float currentDepth = projCoords.z;
-    float bias = 0.0005;
+    // float bias = 0.0005;
+    float bias = max(0.05 * (1.0 - dot(fs_in.normal, lights.directL[0].direction)), 0.005) / 100.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
-    for(int x = -2; x <= 2; x++)
+    for(int x = -3; x <= 3; x++)
     {
-        for(int y = -2; y <= 2; y++)
+        for(int y = -3; y <= 3; y++)
         {
             float pcf = texture(depthMap, projCoords.xy + vec2(x, y)*texelSize).r;
             shadow += currentDepth - bias > pcf ? 1.0 : 0.0;
         }
     }
-    shadow /= 25.0;
+    shadow /= 49.0;
 
     // float closestDepth = texture(depthMap, projCoords.xy).r;
     // float currentDepth = projCoords.z;
