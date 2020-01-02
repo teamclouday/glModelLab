@@ -145,6 +145,14 @@ void Renderer::renderMenu()
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
         ImGui::ColorEdit4("Background", &pRender->background_color[0]);
         ImGui::DragFloat("Window Alpha", &pRender->window_alpha, 0.001f, 0.2f, 1.0f, "%.3f");
+        if(ImGui::Checkbox("Enable sRGB", &pRender->enable_srgb))
+        {
+            glEnable(GL_FRAMEBUFFER_SRGB);
+        }
+        if(!pRender->enable_srgb)
+        {
+            glDisable(GL_FRAMEBUFFER_SRGB);
+        }
         ImGui::PopFont();
         ImGui::End();
         ImGui::PopFont();
@@ -182,7 +190,7 @@ void Renderer::renderMenu()
         sstr << "This program aims to create a platform for experimenting different lighting effects\n" <<
                 "on OpenGL, with easy model loading and configuration\n\n" <<
                 "The author of this program is currently learning shading and shadowing techniques,\n" <<
-                "thus hopefully this program will be upgraded to a versatile and robost system";
+                "thus hopefully this program will be upgraded to a versatile and robust system";
         ImGui::Text(sstr.str().c_str());
         ImGui::PopFont();
         ImGui::End();
