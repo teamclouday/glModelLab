@@ -1,14 +1,17 @@
 #version 330 core
+
 struct Material
 {
-    sampler2D texture_diffuse1;
-    sampler2D texture_specular1;
+    sampler2D tex;
+    vec4 diffuse;
+    vec4 ambient;
+    vec4 specular;
+    vec4 emissive;
+    float shininess;
+    int texCount;
 };
 
 uniform Material material;
-uniform float material_exists;
-uniform float material_alpha;
-
 uniform float exposure = 1.0;
 
 in VS_OUT
@@ -20,9 +23,9 @@ layout (location = 0) out vec4 color;
 
 void main()
 {
-    if(material_exists > 0.5)
-        color = texture(material.texture_diffuse1, fs_in.texCoords);
+    if(material.texCount == 0)
+        color = material.diffuse;
     else
-        color = vec4(0.4, 0.5, 0.6, 1.0);
-    color = vec4(vec3(1.0) - exp(-color.rgb * exposure), material_alpha);
+        color = texture(material.tex, fs_in.texCoords);
+    color = vec4(vec3(1.0) - exp(-color.rgb * exposure), color.a);
 }

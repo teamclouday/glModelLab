@@ -30,10 +30,13 @@ struct Vertex
 
 struct Texture
 {
-    GLuint id;
-    float alpha;
-    std::string type;
-    aiString path;
+    GLuint id; // will be diffuse texture id if exists
+    unsigned texCount;
+    float shininess;
+    glm::vec4 diffuse;
+    glm::vec4 ambient;
+    glm::vec4 specular;
+    glm::vec4 emissive;
 };
 
 GLuint loadTexture(std::string path);
@@ -43,7 +46,7 @@ GLuint loadCubeMap(std::vector<std::string> path);
 class Mesh
 {
 public:
-    Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, Texture tex);
     ~Mesh();
     void draw(GLuint program);
 private:
@@ -51,7 +54,7 @@ private:
     GLuint VAO, VBO, EBO;
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
-    std::vector<Texture> textures;
+    Texture myTexture;
 };
 
 class Model
@@ -59,7 +62,7 @@ class Model
 private:
     std::string directory;
     std::vector<Mesh*> meshes;
-    std::vector<Texture> textures_loaded;
+    // std::vector<Texture> textures_loaded;
 public:
     Model(std::string path);
     ~Model();
