@@ -70,12 +70,12 @@ void Mesh::draw(GLuint program)
         glUniform1i(glGetUniformLocation(program, ("Material." + name + number).c_str()), i);
     }
     if(!this->textures.size())
+        glUniform1f(glGetUniformLocation(program, "material_exists"), 0.0f);
+    else
     {
         glUniform1f(glGetUniformLocation(program, "material_alpha"), this->textures[0].alpha);
-        glUniform1f(glGetUniformLocation(program, "material_exists"), 0.0f);
-    }
-    else
         glUniform1f(glGetUniformLocation(program, "material_exists"), 1.0f);
+    }
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
@@ -276,6 +276,8 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
                 float alpha = 0.0f;
                 if(aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &alpha) == AI_SUCCESS)
                     texture.alpha = alpha;
+                else if(aiGetMaterialFloat(mat, AI_MATKEY_TRANSPARENCYFACTOR, &alpha) == AI_SUCCESS)
+                    texture.alpha = alpha;
                 textures.push_back(texture);
                 textures_loaded.push_back(texture);
             }
@@ -318,18 +320,34 @@ GLuint loadTextureArray(std::vector<std::string> path)
 GLuint loadTexture(std::string path)
 {
     GLuint texture;
-    int width, height;
-    unsigned char *data = SOIL_load_image(path.c_str(), &width, &height, 0, SOIL_LOAD_RGBA);
+    int width, height, channels;
+    unsigned char *data = SOIL_load_image(path.c_str(), &width, &height, &channels, SOIL_LOAD_AUTO);
     if(!data)
     {
         std::cout << "Failed to load image: " << path << std::endl;
+        std::cout << SOIL_last_result() << std::endl;
         exit(1);
+    }
+    GLenum format = GL_RGBA;
+    switch(channels)
+    {
+        case 1:
+            format = GL_RED;
+            break;
+        case 3:
+            format = GL_RGB;
+            break;
+        case 4:
+            format = GL_RGBA;
+            break;
+        default:
+            break;
     }
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    // glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA16, width, height);
-    // glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    // glTexStorage2D(GL_TEXTURE_2D, 4, format, width, height);
+    // glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateTextureMipmap(texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

@@ -150,15 +150,15 @@ void calcShadow()
     // float bias = 0.0005;
     float bias = max(0.05 * (1.0 - dot(fs_in.normal, lights.directL[0].direction)), 0.005) / 100.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
-    for(int x = -3; x <= 3; x++)
+    for(int x = -1; x <= 1; x++)
     {
-        for(int y = -3; y <= 3; y++)
+        for(int y = -1; y <= 1; y++)
         {
             float pcf = texture(depthMap, projCoords.xy + vec2(x, y)*texelSize).r;
             shadow += currentDepth - bias > pcf ? 1.0 : 0.0;
         }
     }
-    shadow /= 49.0;
+    shadow /= 9.0;
 
     // float closestDepth = texture(depthMap, projCoords.xy).r;
     // float currentDepth = projCoords.z;
