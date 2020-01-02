@@ -145,14 +145,7 @@ void Renderer::renderMenu()
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
         ImGui::ColorEdit4("Background", &pRender->background_color[0]);
         ImGui::DragFloat("Window Alpha", &pRender->window_alpha, 0.001f, 0.2f, 1.0f, "%.3f");
-        if(ImGui::Checkbox("Enable sRGB", &pRender->enable_srgb))
-        {
-            glEnable(GL_FRAMEBUFFER_SRGB);
-        }
-        if(!pRender->enable_srgb)
-        {
-            glDisable(GL_FRAMEBUFFER_SRGB);
-        }
+        ImGui::Checkbox("Enable sRGB", &pRender->enable_srgb);
         ImGui::PopFont();
         ImGui::End();
         ImGui::PopFont();
@@ -371,6 +364,9 @@ void Renderer::renderScene()
 
     SDL_GetWindowSize(manager->myWindow, &pRender->window_w, &pRender->window_h);
 
+    if(pRender->enable_srgb)
+        glEnable(GL_FRAMEBUFFER_SRGB);
+
     Shader *myShader = this->myRenderConfig->shader;
     Model *myModel = this->myRenderConfig->model;
 
@@ -437,6 +433,9 @@ void Renderer::renderScene()
         }
 
     }
+
+    if(pRender->enable_srgb)
+        glDisable(GL_FRAMEBUFFER_SRGB);
 
     this->renderMenu();
     ImGui::Render();
