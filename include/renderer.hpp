@@ -45,6 +45,7 @@ struct RENDER_CONFIG
     glm::vec3 model_pos = glm::vec3(0.0f);
     bool update_shadow = false;
     bool enable_srgb = false;
+    float exposure = 1.0;
 };
 
 struct MENU_CONFIG

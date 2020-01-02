@@ -145,6 +145,7 @@ void Renderer::renderMenu()
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[5]);
         ImGui::ColorEdit4("Background", &pRender->background_color[0]);
         ImGui::DragFloat("Window Alpha", &pRender->window_alpha, 0.001f, 0.2f, 1.0f, "%.3f");
+        ImGui::DragFloat("Exposure", &pRender->exposure, 0.01f, 0.0f, 10.0f, "%.2f");
         ImGui::Checkbox("Enable sRGB", &pRender->enable_srgb);
         ImGui::PopFont();
         ImGui::End();
@@ -415,6 +416,7 @@ void Renderer::renderScene()
         }
         else
             glUniform1f(glGetUniformLocation(myShader->programID, "shadow_enabled"), 0.0f);
+        glUniform1f(glGetUniformLocation(myShader->programID, "exposure"), pRender->exposure);
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(myShader->programID, "model"), 1, GL_FALSE, glm::value_ptr(model));

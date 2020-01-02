@@ -8,6 +8,8 @@ struct Material
 uniform Material material;
 uniform float material_exists;
 
+uniform float exposure = 1.0;
+
 in VS_OUT
 {
     vec2 texCoords;
@@ -21,4 +23,5 @@ void main()
         color = texture(material.texture_diffuse1, fs_in.texCoords);
     else
         color = vec4(0.4, 0.5, 0.6, 1.0);
+    color = vec4(vec3(1.0) - exp(-color.rgb * exposure), 1.0);
 }

@@ -59,6 +59,8 @@ uniform int NUM_SPOTL   = 0;
 uniform float shadow_enabled = 0.0;
 uniform sampler2D depthMap;
 
+uniform float exposure = 1.0;
+
 vec3 calcDirectL(int index, vec3 originalColor);
 vec3 calcPointL(int index, vec3 originalColor);
 vec3 calcSpotL(int index, vec3 originalColor);
@@ -89,6 +91,7 @@ void main()
             newColor += calcSpotL(i, result);
         result = newColor;
     }
+    result = vec3(1.0) - exp(-result * exposure);
     color = vec4(result, alpha);
 }
 

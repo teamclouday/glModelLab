@@ -55,6 +55,8 @@ uniform int NUM_POINTL  = 0;
 uniform int NUM_DIRECTL = 0;
 uniform int NUM_SPOTL   = 0;
 
+uniform float exposure = 1.0;
+
 vec3 calcDirectL(int index, vec3 originalColor);
 vec3 calcPointL(int index, vec3 originalColor);
 vec3 calcSpotL(int index, vec3 originalColor);
@@ -80,6 +82,7 @@ void main()
             newColor += calcSpotL(i, result);
         result = newColor;
     }
+    result = vec3(1.0) - exp(-result * exposure);
     color = vec4(result, alpha);
 }
 
