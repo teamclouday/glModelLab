@@ -63,15 +63,15 @@ EXECUTE_PROCESS(
 )
 ENDIF()
 
-IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Debug/assimp-vc140-mt.dll")
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Debug/assimp-vc142-mt.dll")
 EXECUTE_PROCESS(
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/Assimp/bin/assimp-vc140-mt.dll ${CMAKE_SOURCE_DIR}/bin/Debug
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/Assimp/bin/assimp-vc142-mt.dll ${CMAKE_SOURCE_DIR}/bin/Debug
 )
 ENDIF()
 
-IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Release/assimp-vc140-mt.dll")
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/bin/Release/assimp-vc142-mt.dll")
 EXECUTE_PROCESS(
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/Assimp/bin/assimp-vc140-mt.dll ${CMAKE_SOURCE_DIR}/bin/Release
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/external/Assimp/bin/assimp-vc142-mt.dll ${CMAKE_SOURCE_DIR}/bin/Release
 )
 ENDIF()
 ENDIF(WIN32)
@@ -151,7 +151,7 @@ TARGET_LINK_LIBRARIES(run
     SDL2main
     SDL2
     glew32s
-    assimp-vc140-mt
+    assimp-vc142-mt
     SOIL
     IMGUI_LIBRARIES
     ${OPENGL_LIBRARIES}

@@ -7,6 +7,7 @@ struct Material
 
 uniform Material material;
 uniform float material_exists;
+uniform float material_alpha;
 
 in VS_OUT
 {
@@ -83,7 +84,7 @@ void main()
         result = newColor;
     }
     result = vec3(1.0) - exp(-result * exposure);
-    color = vec4(result, alpha);
+    color = vec4(result, material_alpha);
 }
 
 vec3 calcDirectL(int index, vec3 originalColor)

@@ -368,6 +368,9 @@ void Renderer::renderScene()
     if(pRender->enable_srgb)
         glEnable(GL_FRAMEBUFFER_SRGB);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     Shader *myShader = this->myRenderConfig->shader;
     Model *myModel = this->myRenderConfig->model;
 
@@ -438,6 +441,8 @@ void Renderer::renderScene()
 
     if(pRender->enable_srgb)
         glDisable(GL_FRAMEBUFFER_SRGB);
+
+    glDisable(GL_BLEND);
 
     this->renderMenu();
     ImGui::Render();

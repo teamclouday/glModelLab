@@ -31,6 +31,7 @@ struct Vertex
 struct Texture
 {
     GLuint id;
+    float alpha;
     std::string type;
     aiString path;
 };

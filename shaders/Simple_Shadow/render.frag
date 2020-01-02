@@ -6,7 +6,8 @@ struct Material
 };
 
 uniform Material material;
-uniform float material_exists = 0.0;
+uniform float material_exists;
+uniform float material_alpha;
 
 in VS_OUT
 {
@@ -72,13 +73,11 @@ void main()
 {
     vec4 originalColor = vec4(texture(material.texture_diffuse1, fs_in.texCoords));
     vec3 result = vec3(originalColor);
-    float alpha = originalColor.a;
     if(shadow_enabled > 0.5)
         calcShadow();
     if(material_exists < 0.5)
     {
         result = vec3(0.4, 0.5, 0.6);
-        alpha = 1.0;
     }
     if(NUM_DIRECTL > 0 || NUM_POINTL > 0 || NUM_SPOTL > 0)
     {
@@ -92,7 +91,7 @@ void main()
         result = newColor;
     }
     result = vec3(1.0) - exp(-result * exposure);
-    color = vec4(result, alpha);
+    color = vec4(result, material_alpha);
 }
 
 vec3 calcDirectL(int index, vec3 originalColor)
