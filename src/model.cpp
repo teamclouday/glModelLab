@@ -77,8 +77,6 @@ void Mesh::draw(GLuint program)
     //     glUniform1f(glGetUniformLocation(program, "material_exists"), 1.0f);
     // }
     glUniform4fv(glGetUniformLocation(program, "material.diffuse"), 1, &this->myTexture.diffuse[0]);
-    glUniform4fv(glGetUniformLocation(program, "material.ambient"), 1, &this->myTexture.ambient[0]);
-    glUniform4fv(glGetUniformLocation(program, "material.specular"), 1, &this->myTexture.specular[0]);
     glUniform4fv(glGetUniformLocation(program, "material.emissive"), 1, &this->myTexture.emissive[0]);
     glUniform1fv(glGetUniformLocation(program, "material.shininess"), 1, &this->myTexture.shininess);
     glUniform1i(glGetUniformLocation(program, "material.texCount"), this->myTexture.texCount);
@@ -261,23 +259,17 @@ Mesh *Model::processMesh(aiMesh* mesh, const aiScene* scene)
     {
         texture.diffuse = glm::vec4(color.r, color.g, color.b, color.a);
     }
-    if(AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &color))
-    {
-        texture.ambient = glm::vec4(color.r, color.g, color.b, color.a);
-    }
-    if(AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &color))
-    {
-        texture.specular = glm::vec4(color.r, color.g, color.b, color.a);
-    }
     if(AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_EMISSIVE, &color))
     {
         texture.emissive = glm::vec4(color.r, color.g, color.b, color.a);
     }
     float data = 0.0f;
-    unsigned max;
-    texture.shininess = 1.0f;
-    if(AI_SUCCESS == aiGetMaterialFloatArray(material, AI_MATKEY_SHININESS, &data, &max))
-        texture.shininess = data;
+    texture.shininess = 20.0f; // set default shininess value
+    if(AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &data))
+    {
+        if(data >= 1.0f)
+            texture.shininess = data;
+    }
     // texture.alpha = 1.0f;
     // if(AI_SUCCESS == aiGetMaterialFloatArray(material, AI_MATKEY_OPACITY, &data, &max))
     //     texture.alpha = data;

@@ -1,13 +1,15 @@
 #version 330 core
 struct Material
 {
-    sampler2D texture_diffuse1;
-    sampler2D texture_specular1;
+    sampler2D tex;
+    vec4 diffuse;
+    vec4 emissive;
+    float shininess;
+    int texCount;
 };
 
 uniform Material material;
-uniform float material_exists;
-uniform float material_alpha;
+uniform float exposure = 1.0;
 
 in VS_OUT
 {
@@ -60,8 +62,6 @@ uniform int NUM_SPOTL   = 0;
 uniform float shadow_enabled = 0.0;
 uniform sampler2D depthMap;
 
-uniform float exposure = 1.0;
-
 vec3 calcDirectL(int index, vec3 originalColor);
 vec3 calcPointL(int index, vec3 originalColor);
 vec3 calcSpotL(int index, vec3 originalColor);
@@ -71,14 +71,12 @@ float shadow = 0.0;
 
 void main()
 {
-    vec4 originalColor = vec4(texture(material.texture_diffuse1, fs_in.texCoords));
-    vec3 result = vec3(originalColor);
+    vec4 originalColor = material.diffuse;
+    if(material.texCount != 0)
+        originalColor = texture(material.tex, fs_in.texCoords);
+    vec3 result = originalColor.rgb;
     if(shadow_enabled > 0.5)
         calcShadow();
-    if(material_exists < 0.5)
-    {
-        result = vec3(0.4, 0.5, 0.6);
-    }
     if(NUM_DIRECTL > 0 || NUM_POINTL > 0 || NUM_SPOTL > 0)
     {
         vec3 newColor = vec3(0.0, 0.0, 0.0);
@@ -89,9 +87,10 @@ void main()
         for(int i = 0; i < NUM_SPOTL; i++)
             newColor += calcSpotL(i, result);
         result = newColor;
+        result = result + result * material.emissive.rgb;
     }
     result = vec3(1.0) - exp(-result * exposure);
-    color = vec4(result, material_alpha);
+    color = vec4(result, originalColor.a);
 }
 
 vec3 calcDirectL(int index, vec3 originalColor)
@@ -99,10 +98,10 @@ vec3 calcDirectL(int index, vec3 originalColor)
     vec3 lightDir = normalize(-lights.directL[index].direction);
     float diff = max(0.0, dot(fs_in.normal, lightDir));
     vec3 reflectDir = reflect(-lightDir, fs_in.normal);
-    float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
+    float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), material.shininess);
     vec3 result = 0.05 * originalColor;
-    result += (1.0-shadow) * 0.6 * lights.directL[index].color * diff * originalColor;
-    result += (1.0-shadow) * 0.9 * lights.directL[index].color * spec * originalColor;
+    result += (1.0-shadow) * 0.5 * lights.directL[index].color * diff * originalColor;
+    result += (1.0-shadow) * 0.8 * lights.directL[index].color * spec * originalColor;
     return result;
 }
 
@@ -111,12 +110,12 @@ vec3 calcPointL(int index, vec3 originalColor)
     vec3 lightDir = normalize(lights.pointL[index].position - fs_in.fragPos);
     float diff = max(0.0, dot(fs_in.normal, lightDir));
     vec3 reflectDir = reflect(-lightDir, fs_in.normal);
-    float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), 32.0);
+    float spec = pow(max(0.0, dot(normalize(fs_in.viewPos - fs_in.fragPos), reflectDir)), material.shininess);
     float dis = length(lights.pointL[index].position - fs_in.fragPos);
     float att = 1.0 / (1.0 + dis*dis*lights.pointL[index].coeff);
     vec3 result = 0.05 * originalColor;
     result += att * 0.5 * lights.pointL[index].color * diff * originalColor;
-    result += att * 0.9 * lights.pointL[index].color * spec * originalColor;
+    result += att * 0.8 * lights.pointL[index].color * spec * originalColor;
     return result;
 }
 
@@ -132,8 +131,8 @@ vec3 calcSpotL(int index, vec3 originalColor)
     float epsilon = lights.spotL[index].cutOff - lights.spotL[index].cutOffOuter;
     float intensity = clamp((theta - lights.spotL[index].cutOffOuter) / epsilon, 0.0, 1.0);
     vec3 result = 0.05 * originalColor;
-    result += intensity * att * 0.8 * lights.spotL[index].color * diff * originalColor;
-    result += intensity * att * 0.9 * lights.spotL[index].color * spec * originalColor;
+    result += intensity * att * 0.5 * lights.spotL[index].color * diff * originalColor;
+    result += intensity * att * 0.8 * lights.spotL[index].color * spec * originalColor;
     return result;
 }
 
