@@ -30,7 +30,8 @@ struct Vertex
 
 struct Texture
 {
-    GLuint id; // will be diffuse texture id if exists
+    GLuint diffuse_id; // will be diffuse texture id if exists
+    GLuint emission_id; // will be emission map id if exists
     unsigned texCount;
     float shininess;
     glm::vec4 diffuse;

@@ -1,7 +1,8 @@
 #version 330 core
 struct Material
 {
-    sampler2D tex;
+    sampler2D tex_diff;
+    sampler2D tex_emi;
     vec4 diffuse;
     vec4 emissive;
     float shininess;
@@ -66,7 +67,7 @@ void main()
 {
     vec4 originalColor = material.diffuse;
     if(material.texCount != 0)
-        originalColor = texture(material.tex, fs_in.texCoords);
+        originalColor = texture(material.tex_diff, fs_in.texCoords);
     vec3 result = originalColor.rgb;
     if(NUM_DIRECTL > 0 || NUM_POINTL > 0 || NUM_SPOTL > 0)
     {
@@ -78,8 +79,11 @@ void main()
         for(int i = 0; i < NUM_SPOTL; i++)
             newColor += calcSpotL(i, result);
         result = newColor;
-        result = result + result * material.emissive.rgb;
     }
+    if(material.texCount == 0)
+        result += result*material.emissive.rgb;
+    else
+        result += result*texture(material.tex_emi, fs_in.texCoords).rgb;
     result = vec3(1.0) - exp(-result * exposure);
     color = vec4(result, originalColor.a);
 }

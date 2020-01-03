@@ -18,7 +18,11 @@ Mesh::~Mesh()
     this->indices.clear();
     this->indices.shrink_to_fit();
     if(this->myTexture.texCount > 0)
-        glDeleteTextures(1, &this->myTexture.id);
+    {
+        glDeleteTextures(1, &this->myTexture.diffuse_id);
+        if(this->myTexture.texCount > 1)
+            glDeleteTextures(1, &this->myTexture.emission_id);
+    }
 }
 
 void Mesh::setupMesh()
@@ -81,8 +85,11 @@ void Mesh::draw(GLuint program)
     glUniform1fv(glGetUniformLocation(program, "material.shininess"), 1, &this->myTexture.shininess);
     glUniform1i(glGetUniformLocation(program, "material.texCount"), this->myTexture.texCount);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, this->myTexture.id);
-    glUniform1i(glGetUniformLocation(program, "material.tex"), 0);
+    glBindTexture(GL_TEXTURE_2D, this->myTexture.diffuse_id);
+    glUniform1i(glGetUniformLocation(program, "material.tex_diff"), 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, this->myTexture.emission_id);
+    glUniform1i(glGetUniformLocation(program, "material.tex_emi"), 1);
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
@@ -245,12 +252,18 @@ Mesh *Model::processMesh(aiMesh* mesh, const aiScene* scene)
     // process material
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     aiString texPath;
-    texture.id = 0;
+    texture.diffuse_id = 0;
+    texture.emission_id = 0;
     texture.texCount = 0;
     if(AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &texPath))
     {
-        texture.id = loadTexture(this->directory+"/"+texPath.C_Str());
+        texture.diffuse_id = loadTexture(this->directory+"/"+texPath.C_Str());
         texture.texCount += 1;
+        if(AI_SUCCESS == material->GetTexture(aiTextureType_EMISSIVE, 0, &texPath))
+        {
+            texture.emission_id = loadTexture(this->directory+"/"+texPath.C_Str());
+            texture.texCount += 1;
+        }
     }
     aiColor4D color;
     // set default diffuse color if not exists
